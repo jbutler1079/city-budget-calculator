@@ -11,13 +11,14 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      height: 100%;
+      min-height: 100%;
       font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
       background: #0d1117;
       color: #ffffff;
       font-size: 14px;
       line-height: 1.5;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     /* ============================================================
@@ -139,8 +140,7 @@
     ============================================================ */
     .main-layout {
       display: flex;
-      height: calc(100vh - 104px); /* header + controls */
-      overflow: hidden;
+      min-height: calc(100vh - 104px); /* header + controls */
     }
 
     /* ============================================================
@@ -409,6 +409,42 @@
 
     .summary-box strong { color: #ffffff; font-weight: 700; }
 
+    .summary-actions {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-download-report {
+      padding: 6px 12px;
+      background: #1f6feb;
+      border: 1px solid #388bfd;
+      color: #ffffff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.12s;
+    }
+    .btn-download-report:hover {
+      background: #388bfd;
+      border-color: #58a6ff;
+    }
+
+    .summary-action-hint {
+      font-size: 10px;
+      color: #8b949e;
+    }
+
+    .summary-disclaimer {
+      margin-top: 8px;
+      font-size: 10px;
+      color: #8b949e;
+      line-height: 1.5;
+    }
+
     /* Section divider */
     hr.sdiv {
       border: none;
@@ -418,6 +454,8 @@
   </style>
 </head>
 <body>
+
+<div id="cityBudgetDashboard">
 
 <!-- ============================================================
      HEADER
@@ -445,11 +483,11 @@
 
   <div class="ctrl-sep"></div>
   <span class="ctrl-label">Active Scenario:</span>
-  <button class="scenario-btn active-a" id="btnA" onclick="setActiveScenario('A')">A — Status Quo</button>
-  <button class="scenario-btn" id="btnB" onclick="setActiveScenario('B')">B — Improved</button>
-  <button class="scenario-btn" id="btnC" onclick="setActiveScenario('C')">C — Target</button>
+  <button class="scenario-btn active-a" id="btnA">A — Status Quo</button>
+  <button class="scenario-btn" id="btnB">B — Improved</button>
+  <button class="scenario-btn" id="btnC">C — Target</button>
 
-  <button class="btn-reset" onclick="resetToDefaults()">⟳ Reset to Defaults</button>
+  <button class="btn-reset" id="btnReset">⟳ Reset to Defaults</button>
 </div>
 
 <!-- ============================================================
@@ -543,11 +581,11 @@
           <label>Healthcare Cost Input Mode</label>
           <div class="radio-group">
             <label class="radio-option">
-              <input type="radio" name="inputMode" value="total" id="modeTotal" checked onchange="handleInputModeChange()">
+              <input type="radio" name="inputMode" value="total" id="modeTotal" checked>
               <span>Total Employer Spend</span>
             </label>
             <label class="radio-option">
-              <input type="radio" name="inputMode" value="perEmployee" id="modePerEmp" onchange="handleInputModeChange()">
+              <input type="radio" name="inputMode" value="perEmployee" id="modePerEmp">
               <span>Per-Employee Annual</span>
             </label>
           </div>
@@ -611,15 +649,15 @@
           <label>Projection Years</label>
           <div class="radio-group">
             <label class="radio-option">
-              <input type="radio" name="years" value="3" onchange="handleRecalc()">
+              <input type="radio" name="years" value="3">
               <span>3 Years</span>
             </label>
             <label class="radio-option">
-              <input type="radio" name="years" value="5" checked onchange="handleRecalc()">
+              <input type="radio" name="years" value="5" checked>
               <span>5 Years</span>
             </label>
             <label class="radio-option">
-              <input type="radio" name="years" value="10" onchange="handleRecalc()">
+              <input type="radio" name="years" value="10">
               <span>10 Years</span>
             </label>
           </div>
@@ -694,11 +732,18 @@
     <div class="summary-box">
       <h4>🔊 Executive Summary</h4>
       <p id="summaryText">Initializing model…</p>
+      <div class="summary-actions">
+        <button id="btnDownloadReport" class="btn-download-report" type="button">⬇️ Download Report</button>
+        <span class="summary-action-hint">Opens a print-friendly report for printing or saving as PDF.</span>
+      </div>
+      <p class="summary-disclaimer">Planning model for scenario analysis only; this dashboard is not a formal financial forecast.</p>
     </div>
 
   </div><!-- /right-panel -->
 
 </div><!-- /main-layout -->
+
+</div><!-- /cityBudgetDashboard -->
 
 <script>
   /* ============================================================
@@ -748,6 +793,12 @@
      STATE
   ============================================================ */
   let activeScenario = 'A';
+  let lastReportState = null;
+  const dashboardRoot = document.getElementById('cityBudgetDashboard') || document;
+
+  function $id(id) {
+    return dashboardRoot.querySelector(`#${id}`);
+  }
 
   /* ============================================================
      FORMATTING UTILITIES
@@ -771,30 +822,30 @@
      READ ALL INPUTS
   ============================================================ */
   function getInputs() {
-    const inputMode = document.querySelector('input[name="inputMode"]:checked')?.value || 'total';
-    const empCount  = parseFloat(document.getElementById('empCount').value) || 120;
+    const inputMode = dashboardRoot.querySelector('input[name="inputMode"]:checked')?.value || 'total';
+    const empCount  = parseFloat($id('empCount').value) || 120;
     const HC0 = inputMode === 'total'
-      ? (parseFloat(document.getElementById('hcTotal').value) || 1800000)
-      : (parseFloat(document.getElementById('hcPerEmployee').value) || 15000) * empCount;
-    const years = parseInt(document.querySelector('input[name="years"]:checked')?.value || '5');
+      ? (parseFloat($id('hcTotal').value) || 1800000)
+      : (parseFloat($id('hcPerEmployee').value) || 15000) * empCount;
+    const years = parseInt(dashboardRoot.querySelector('input[name="years"]:checked')?.value || '5');
 
     return {
-      gfBudget:       parseFloat(document.getElementById('gfBudget').value)       || 25000000,
-      gfGrowth:       parseFloat(document.getElementById('gfGrowth').value)        || 3.0,
-      reserveBalance0:parseFloat(document.getElementById('reserveBalance').value)  || 5000000,
-      reservePct:     parseFloat(document.getElementById('reservePct').value)      || 15,
-      taxableValue:   parseFloat(document.getElementById('taxableValue').value)    || 750000000,
-      tvGrowth:       parseFloat(document.getElementById('tvGrowth').value)        || 2.0,
-      taxRate:        parseFloat(document.getElementById('taxRate').value)         || 0.45,
-      medianHome:     parseFloat(document.getElementById('medianHome').value)      || 225000,
-      moFunded:       parseFloat(document.getElementById('moFunded').value)        || 100,
+      gfBudget:       parseFloat($id('gfBudget').value)       || 25000000,
+      gfGrowth:       parseFloat($id('gfGrowth').value)        || 3.0,
+      reserveBalance0:parseFloat($id('reserveBalance').value)  || 5000000,
+      reservePct:     parseFloat($id('reservePct').value)      || 15,
+      taxableValue:   parseFloat($id('taxableValue').value)    || 750000000,
+      tvGrowth:       parseFloat($id('tvGrowth').value)        || 2.0,
+      taxRate:        parseFloat($id('taxRate').value)         || 0.45,
+      medianHome:     parseFloat($id('medianHome').value)      || 225000,
+      moFunded:       parseFloat($id('moFunded').value)        || 100,
       empCount,
       HC0,
-      trendA:         parseFloat(document.getElementById('trendA').value)          || 8.0,
-      trendB:         parseFloat(document.getElementById('trendB').value)          || 5.0,
-      trendC:         parseFloat(document.getElementById('trendC').value)          || 3.0,
-      fteCost:        parseFloat(document.getElementById('fteCost').value)         || 75000,
-      fteLabel:       document.getElementById('fteLabel').value                   || 'Police Officers',
+      trendA:         parseFloat($id('trendA').value)          || 8.0,
+      trendB:         parseFloat($id('trendB').value)          || 5.0,
+      trendC:         parseFloat($id('trendC').value)          || 3.0,
+      fteCost:        parseFloat($id('fteCost').value)         || 75000,
+      fteLabel:       $id('fteLabel').value                   || 'Police Officers',
       years
     };
   }
@@ -937,7 +988,7 @@
       }
     ];
 
-    document.getElementById('kpiRow').innerHTML = tiles.map(t => `
+    $id('kpiRow').innerHTML = tiles.map(t => `
       <div class="kpi-tile ${t.color}">
         <div class="kpi-label">${t.label}</div>
         <div class="kpi-value">${t.value}</div>
@@ -962,7 +1013,7 @@
                      : resBal1 >= resFloor1       ? 'approaching'
                      :                              'below';
 
-    document.getElementById('summaryText').innerHTML =
+    $id('summaryText').innerHTML =
       `Under <strong>Scenario ${activeScenario} (${scenName})</strong>, the City faces a ` +
       `<strong>${trendPct.toFixed(1)}%</strong> annual healthcare cost increase. ` +
       `In <strong>FY${nextFY}</strong>, employer healthcare costs are projected to grow by ` +
@@ -975,7 +1026,150 @@
       `If the tax rate is held flat, the City's unassigned fund balance would draw to ` +
       `<strong>${fmtDollar(resBal1)}</strong> by end of Year 1 — ` +
       `<strong>${resPos}</strong> the ${inputs.reservePct}% reserve policy floor of ` +
-      `<strong>${fmtDollar(resFloor1)}</strong>.`;
+      `<strong>${fmtDollar(resFloor1)}</strong>. ` +
+      `Over a <strong>${N}-year</strong> planning window, this model helps decision-makers compare short-term affordability with long-term budget resilience under each healthcare trend assumption.`;
+  }
+
+  function buildPrintableReportHtml() {
+    if (!lastReportState) return '';
+
+    const { inputs, activeSc, scenarioKey, scenarioName, activeTrend } = lastReportState;
+    const nextFY = new Date().getFullYear() + 1;
+    const N = inputs.years;
+    const inputMode = dashboardRoot.querySelector('input[name="inputMode"]:checked')?.value || 'total';
+    const inputModeLabel = inputMode === 'total' ? 'Total Employer Spend' : 'Per-Employee Annual';
+    const summaryText = ($id('summaryText')?.innerText || '').trim();
+    const yr1 = {
+      hcIncrease: activeSc.hcIncrease[1],
+      taxInc: activeSc.taxRateIncrease[1],
+      hhImpact: activeSc.householdImpact[1],
+      fte: activeSc.fteEquiv[1],
+      reserve: activeSc.reserveBalance[1],
+      reserveFloor: activeSc.reserveFloor[1]
+    };
+    const yrN = {
+      hcPct: activeSc.hcPct[N],
+      cumTaxRateInc: activeSc.cumTaxRateIncrease[N],
+      reserve: activeSc.reserveBalance[N],
+      reserveFloor: activeSc.reserveFloor[N]
+    };
+
+    const assumptions = [
+      { label: 'General Fund Budget', value: fmtDollar(inputs.gfBudget) },
+      { label: 'General Fund Growth', value: fmtPct(inputs.gfGrowth) },
+      { label: 'Beginning Reserve Balance', value: fmtDollar(inputs.reserveBalance0) },
+      { label: 'Reserve Policy Target', value: fmtPct(inputs.reservePct) },
+      { label: 'Total Taxable Value', value: fmtDollar(inputs.taxableValue) },
+      { label: 'Taxable Value Growth', value: fmtPct(inputs.tvGrowth) },
+      { label: 'Current M&O Tax Rate', value: `$${fmtFixed(inputs.taxRate, 4)} per $100` },
+      { label: 'Median Taxable Home Value', value: fmtDollar(inputs.medianHome) },
+      { label: 'Portion Funded Through M&O', value: fmtPct(inputs.moFunded) },
+      { label: 'Benefit-Eligible Employee Count', value: Math.round(inputs.empCount).toLocaleString() },
+      { label: 'Healthcare Input Mode', value: inputModeLabel },
+      { label: 'Baseline Employer Healthcare Spend', value: fmtDollar(inputs.HC0) },
+      { label: 'Scenario A Trend', value: fmtPct(inputs.trendA) },
+      { label: 'Scenario B Trend', value: fmtPct(inputs.trendB) },
+      { label: 'Scenario C Trend', value: fmtPct(inputs.trendC) },
+      { label: 'Service Unit Cost', value: `${fmtDollar(inputs.fteCost)} per ${inputs.fteLabel}` },
+      { label: 'Projection Horizon', value: `${N} years` }
+    ];
+
+    const assumptionsRows = assumptions.map(item =>
+      `<tr><td>${item.label}</td><td>${item.value}</td></tr>`
+    ).join('');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Budget Healthcare Impact Report</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #111; margin: 28px; line-height: 1.45; }
+    h1 { margin: 0 0 6px; font-size: 24px; }
+    h2 { margin: 22px 0 8px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    .meta { color: #444; font-size: 13px; margin-bottom: 14px; }
+    .kpis { display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 10px; }
+    .kpi { border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+    .kpi .label { color: #555; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .kpi .value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+    th { background: #f6f8fa; }
+    .small { color: #666; font-size: 12px; margin-top: 10px; }
+    @media print { body { margin: 16mm; } }
+  </style>
+</head>
+<body>
+  <h1>City Budget Healthcare Impact Report</h1>
+  <div class="meta">
+    Generated ${new Date().toLocaleString()}<br>
+    Scenario ${scenarioKey} (${scenarioName}) • ${activeTrend.toFixed(1)}% healthcare trend • ${N}-year horizon
+  </div>
+
+  <h2>Year 1 Snapshot (FY${nextFY})</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="label">Healthcare Increase</div><div class="value">${fmtDollar(yr1.hcIncrease)}</div></div>
+    <div class="kpi"><div class="label">Tax Rate Increase Needed</div><div class="value">$${fmtFixed(yr1.taxInc, 4)} / $100</div></div>
+    <div class="kpi"><div class="label">Median Home Impact</div><div class="value">$${Math.round(yr1.hhImpact)} / year</div></div>
+    <div class="kpi"><div class="label">Service Equivalent</div><div class="value">${yr1.fte.toFixed(1)} ${inputs.fteLabel}</div></div>
+  </div>
+
+  <h2>Reserve Position</h2>
+  <table>
+    <tr><th>Period</th><th>Reserve Balance</th><th>Policy Floor</th><th>Status</th></tr>
+    <tr>
+      <td>End of Year 1</td>
+      <td>${fmtDollar(yr1.reserve)}</td>
+      <td>${fmtDollar(yr1.reserveFloor)}</td>
+      <td>${yr1.reserve >= yr1.reserveFloor ? 'At/Above Floor' : 'Below Floor'}</td>
+    </tr>
+    <tr>
+      <td>End of Year ${N}</td>
+      <td>${fmtDollar(yrN.reserve)}</td>
+      <td>${fmtDollar(yrN.reserveFloor)}</td>
+      <td>${yrN.reserve >= yrN.reserveFloor ? 'At/Above Floor' : 'Below Floor'}</td>
+    </tr>
+  </table>
+
+  <h2>Multi-Year Perspective</h2>
+  <table>
+    <tr><th>Metric</th><th>Value</th></tr>
+    <tr><td>Healthcare as % of General Fund in Year ${N}</td><td>${fmtPct(yrN.hcPct)}</td></tr>
+    <tr><td>Cumulative tax rate increase by Year ${N}</td><td>$${fmtFixed(yrN.cumTaxRateInc, 4)} per $100</td></tr>
+  </table>
+
+  <h2>Current Input Assumptions</h2>
+  <table>
+    <tr><th>Input</th><th>Value</th></tr>
+    ${assumptionsRows}
+  </table>
+
+  <h2>Executive Summary</h2>
+  <p>${summaryText}</p>
+  <p class="small">Note: This report reflects current on-screen inputs and assumptions at the time generated. It is a planning model for scenario analysis and is not a formal financial forecast.</p>
+</body>
+</html>`;
+  }
+
+  function downloadReport() {
+    if (!lastReportState) render();
+
+    const reportHtml = buildPrintableReportHtml();
+    if (!reportHtml) return;
+
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      alert('Please allow pop-ups to generate the report.');
+      return;
+    }
+
+    reportWindow.document.open();
+    reportWindow.document.write(reportHtml);
+    reportWindow.document.close();
+    reportWindow.focus();
+
+    setTimeout(() => reportWindow.print(), 350);
   }
 
   /* ============================================================
@@ -985,11 +1179,11 @@
     const yr1a = inputs.HC0 * (1 + inputs.trendA / 100);
     const yr1b = inputs.HC0 * (1 + inputs.trendB / 100);
     const yr1c = inputs.HC0 * (1 + inputs.trendC / 100);
-    document.getElementById('siA').textContent =
+    $id('siA').textContent =
       `${inputs.trendA.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1a)}`;
-    document.getElementById('siB').textContent =
+    $id('siB').textContent =
       `${inputs.trendB.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1b)}`;
-    document.getElementById('siC').textContent =
+    $id('siC').textContent =
       `${inputs.trendC.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1c)}`;
   }
 
@@ -1488,9 +1682,16 @@
     const activeTrend = activeScenario === 'A' ? inputs.trendA
                       : activeScenario === 'B' ? inputs.trendB : inputs.trendC;
     const scenNames   = { A: 'Status Quo', B: 'Improved', C: 'Target' };
+    lastReportState = {
+      inputs,
+      activeSc,
+      scenarioKey: activeScenario,
+      scenarioName: scenNames[activeScenario],
+      activeTrend
+    };
 
     /* Active scenario label in title */
-    document.getElementById('activeScenarioLabel').textContent =
+    $id('activeScenarioLabel').textContent =
       `${activeScenario} (${scenNames[activeScenario]})`;
 
     /* Update scenario strip */
@@ -1503,10 +1704,10 @@
     renderSummary(inputs, activeSc, scenNames[activeScenario], activeTrend);
 
     /* Charts */
-    drawChart1(document.getElementById('chart1'), inputs, scA, scB, scC);
-    drawChart2(document.getElementById('chart2'), inputs, scA, scB, scC);
-    drawChart3(document.getElementById('chart3'), inputs, scA, scB, scC);
-    drawChart4(document.getElementById('chart4'), inputs, scA, scB, scC);
+    drawChart1($id('chart1'), inputs, scA, scB, scC);
+    drawChart2($id('chart2'), inputs, scA, scB, scC);
+    drawChart3($id('chart3'), inputs, scA, scB, scC);
+    drawChart4($id('chart4'), inputs, scA, scB, scC);
   }
 
   /* ============================================================
@@ -1514,11 +1715,11 @@
   ============================================================ */
   function setActiveScenario(s) {
     activeScenario = s;
-    document.getElementById('btnA').className =
+    $id('btnA').className =
       'scenario-btn' + (s === 'A' ? ' active-a' : '');
-    document.getElementById('btnB').className =
+    $id('btnB').className =
       'scenario-btn' + (s === 'B' ? ' active-b' : '');
-    document.getElementById('btnC').className =
+    $id('btnC').className =
       'scenario-btn' + (s === 'C' ? ' active-c' : '');
     render();
   }
@@ -1527,10 +1728,10 @@
      INPUT MODE TOGGLE (Total Spend vs Per-Employee)
   ============================================================ */
   function handleInputModeChange() {
-    const mode = document.querySelector('input[name="inputMode"]:checked')?.value;
-    document.getElementById('totalSpendField').style.display =
+    const mode = dashboardRoot.querySelector('input[name="inputMode"]:checked')?.value;
+    $id('totalSpendField').style.display =
       mode === 'total' ? '' : 'none';
-    document.getElementById('perEmpField').style.display =
+    $id('perEmpField').style.display =
       mode === 'perEmployee' ? '' : 'none';
     render();
   }
@@ -1543,7 +1744,7 @@
     if (!p) return;
 
     const set = (id, val) => {
-      const el = document.getElementById(id);
+      const el = $id(id);
       if (el) el.value = val;
     };
 
@@ -1566,12 +1767,12 @@
     set('fteLabel',       p.fteLabel);
 
     /* Input mode radio */
-    const modeEl = document.getElementById(p.inputMode === 'total' ? 'modeTotal' : 'modePerEmp');
+    const modeEl = $id(p.inputMode === 'total' ? 'modeTotal' : 'modePerEmp');
     if (modeEl) modeEl.checked = true;
     handleInputModeChange();
 
     /* Years radio */
-    document.querySelectorAll('input[name="years"]').forEach(r => {
+    dashboardRoot.querySelectorAll('input[name="years"]').forEach(r => {
       r.checked = (parseInt(r.value) === p.years);
     });
 
@@ -1582,7 +1783,7 @@
      RESET
   ============================================================ */
   function resetToDefaults() {
-    document.getElementById('presetSelect').value = 'midsize';
+    $id('presetSelect').value = 'midsize';
     setActiveScenario('A');
     applyPreset('midsize');
   }
@@ -1592,25 +1793,39 @@
   ============================================================ */
   function handleRecalc() {
     /* Switch preset dropdown to "Custom" when user edits any input */
-    const sel = document.getElementById('presetSelect');
+    const sel = $id('presetSelect');
     if (sel.value !== 'custom') sel.value = 'custom';
     render();
+  }
+
+  function bindEventListeners() {
+    $id('btnA').addEventListener('click', () => setActiveScenario('A'));
+    $id('btnB').addEventListener('click', () => setActiveScenario('B'));
+    $id('btnC').addEventListener('click', () => setActiveScenario('C'));
+    $id('btnReset').addEventListener('click', resetToDefaults);
+    $id('btnDownloadReport').addEventListener('click', downloadReport);
+
+    dashboardRoot.querySelectorAll('input[name="inputMode"]').forEach(el => {
+      el.addEventListener('change', handleInputModeChange);
+    });
+
+    dashboardRoot.querySelectorAll('input[name="years"]').forEach(el => {
+      el.addEventListener('change', handleRecalc);
+    });
+
+    dashboardRoot.querySelectorAll('input[type="number"], input[type="text"]').forEach(el => {
+      el.addEventListener('input', handleRecalc);
+      el.addEventListener('change', handleRecalc);
+    });
+
+    $id('presetSelect').addEventListener('change', function () {
+      if (this.value !== 'custom') applyPreset(this.value);
+    });
   }
 
   /* ============================================================
      EVENT LISTENERS
   ============================================================ */
-  /* All numeric / text inputs */
-  document.querySelectorAll('input[type="number"], input[type="text"]').forEach(el => {
-    el.addEventListener('input',  handleRecalc);
-    el.addEventListener('change', handleRecalc);
-  });
-
-  /* Preset dropdown */
-  document.getElementById('presetSelect').addEventListener('change', function () {
-    if (this.value !== 'custom') applyPreset(this.value);
-  });
-
   /* Redraw charts on window resize */
   let _resizeTimer;
   window.addEventListener('resize', () => {
@@ -1621,15 +1836,25 @@
   /* ============================================================
      BOOT — initial render with defaults
   ============================================================ */
-  /* Use requestAnimationFrame so the browser has performed layout
-     and canvas elements have their CSS-computed dimensions available
-     before we attempt to read getBoundingClientRect() for drawing. */
-  document.addEventListener('DOMContentLoaded', () => {
+  function bootDashboard() {
+    if (dashboardRoot.dataset.booted === '1') return;
+    dashboardRoot.dataset.booted = '1';
+
+    bindEventListeners();
+
+    /* Use requestAnimationFrame so layout has completed and canvas
+       elements have CSS-computed dimensions before drawing. */
     requestAnimationFrame(() => {
       setActiveScenario('A');
       applyPreset('midsize');
     });
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootDashboard);
+  } else {
+    bootDashboard();
+  }
 
 </script>
 </body>
