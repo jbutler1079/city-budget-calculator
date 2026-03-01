@@ -849,7 +849,7 @@
       const taxRateInc  = (hcInc * moD) / (TVt / 100);
       const cumTRInc    = r.cumTaxRateIncrease[t - 1] + taxRateInc;
       const hhImpact    = (taxRateInc / 100) * medianHome;
-      const fteEq       = hcInc / (fteCost || 1);
+      const fteEq       = fteCost > 0 ? hcInc / fteCost : 0;
       const hcPctVal    = HCt / GFt * 100;
       const resBal      = r.reserveBalance[t - 1] - hcInc;
       const resFloor    = GFt * rpD;
@@ -1019,9 +1019,9 @@
     if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
       canvas.width  = w * dpr;
       canvas.height = h * dpr;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(dpr, dpr);
     }
+    // Always reset the transform so scaling is correct regardless of prior state
+    canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
     return { w, h };
   }
 
