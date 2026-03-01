@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Budget Healthcare Impact Dashboard</title>
+  <style>
+    /* ============================================================
+       BASE RESET & TYPOGRAPHY
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+      background: #0d1117;
+      color: #ffffff;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+    .header {
+      background: #161b22;
+      border-bottom: 3px solid #1f6feb;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 58px;
+    }
+
+    .header-icon { font-size: 26px; }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.2px;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: #8b949e;
+      margin-top: 1px;
+    }
+
+    .header-badge {
+      margin-left: auto;
+      background: rgba(31,111,235,0.15);
+      border: 1px solid rgba(31,111,235,0.4);
+      color: #58a6ff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    /* ============================================================
+       CONTROLS BAR
+    ============================================================ */
+    .controls-bar {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 46px;
+    }
+
+    .ctrl-label {
+      font-size: 10px;
+      color: #8b949e;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      white-space: nowrap;
+    }
+
+    select.preset-select {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #ffffff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      min-width: 220px;
+      height: 30px;
+    }
+    select.preset-select:focus { outline: 2px solid #1f6feb; }
+
+    .ctrl-sep {
+      width: 1px;
+      height: 20px;
+      background: #30363d;
+      margin: 0 4px;
+    }
+
+    .scenario-btn {
+      padding: 4px 14px;
+      border: 2px solid #30363d;
+      background: #21262d;
+      color: #8b949e;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+      height: 30px;
+      transition: all 0.12s;
+    }
+    .scenario-btn:hover { border-color: #8b949e; color: #c9d1d9; }
+    .scenario-btn.active-a { border-color: #f85149; background: rgba(248,81,73,0.18); color: #f85149; }
+    .scenario-btn.active-b { border-color: #d29922; background: rgba(210,153,34,0.18); color: #d29922; }
+    .scenario-btn.active-c { border-color: #3fb950; background: rgba(63,185,80,0.18); color: #3fb950; }
+
+    .btn-reset {
+      margin-left: auto;
+      padding: 4px 14px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      height: 30px;
+      transition: all 0.12s;
+    }
+    .btn-reset:hover { background: #30363d; border-color: #8b949e; }
+
+    /* ============================================================
+       MAIN LAYOUT
+    ============================================================ */
+    .main-layout {
+      display: flex;
+      height: calc(100vh - 104px); /* header + controls */
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       LEFT PANEL — INPUTS
+    ============================================================ */
+    .left-panel {
+      width: 355px;
+      min-width: 355px;
+      background: #161b22;
+      border-right: 2px solid #30363d;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    /* Scrollbar */
+    .left-panel::-webkit-scrollbar { width: 5px; }
+    .left-panel::-webkit-scrollbar-track { background: #0d1117; }
+    .left-panel::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+    .input-section {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 7px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .input-section-hdr {
+      background: #21262d;
+      padding: 8px 12px;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .section-icon { font-size: 14px; }
+
+    .input-section-hdr h3 {
+      font-size: 10px;
+      font-weight: 700;
+      color: #c9d1d9;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+    }
+
+    .input-section-body { padding: 10px 12px; }
+
+    .input-field { margin-bottom: 9px; }
+    .input-field:last-child { margin-bottom: 0; }
+
+    .input-field label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: #8b949e;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .input-field input[type="number"],
+    .input-field input[type="text"] {
+      width: 100%;
+      background: #161b22;
+      border: 1px solid #30363d;
+      color: #ffffff;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      transition: border-color 0.12s;
+      height: 28px;
+    }
+    .input-field input:focus { outline: none; border-color: #1f6feb; }
+    .input-field input.scenario-a { border-left: 3px solid #f85149; }
+    .input-field input.scenario-b { border-left: 3px solid #d29922; }
+    .input-field input.scenario-c { border-left: 3px solid #3fb950; }
+
+    .input-hint {
+      font-size: 9px;
+      color: #6e7681;
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+    .radio-option { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+    .radio-option input[type="radio"] { accent-color: #1f6feb; cursor: pointer; }
+    .radio-option span { font-size: 11px; color: #c9d1d9; }
+
+    /* ============================================================
+       RIGHT PANEL — DASHBOARD
+    ============================================================ */
+    .right-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px;
+      background: #0d1117;
+      min-width: 0;
+    }
+
+    .right-panel::-webkit-scrollbar { width: 5px; }
+    .right-panel::-webkit-scrollbar-track { background: #0d1117; }
+    .right-panel::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+    /* Scenario Strip */
+    .scenario-strip {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .scenario-indicator {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 5px;
+      border: 1px solid;
+      min-width: 0;
+    }
+    .scenario-indicator.a { border-color: rgba(248,81,73,0.45); background: rgba(248,81,73,0.07); }
+    .scenario-indicator.b { border-color: rgba(210,153,34,0.45); background: rgba(210,153,34,0.07); }
+    .scenario-indicator.c { border-color: rgba(63,185,80,0.45); background: rgba(63,185,80,0.07); }
+
+    .si-name {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .scenario-indicator.a .si-name { color: #f85149; }
+    .scenario-indicator.b .si-name { color: #d29922; }
+    .scenario-indicator.c .si-name { color: #3fb950; }
+    .si-val { font-size: 10px; color: #8b949e; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Panel Section Title */
+    .panel-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: #30363d; }
+
+    /* ============================================================
+       KPI TILES
+    ============================================================ */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .kpi-tile {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-left: 4px solid #30363d;
+      border-radius: 5px;
+      padding: 10px 11px;
+      min-height: 88px;
+      display: flex;
+      flex-direction: column;
+    }
+    .kpi-tile.green { border-left-color: #3fb950; }
+    .kpi-tile.amber { border-left-color: #d29922; }
+    .kpi-tile.red   { border-left-color: #f85149; }
+
+    .kpi-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 4px;
+      font-variant-numeric: tabular-nums;
+      word-break: break-all;
+      flex: 1;
+    }
+    .kpi-tile.green .kpi-value { color: #3fb950; }
+    .kpi-tile.amber .kpi-value { color: #d29922; }
+    .kpi-tile.red   .kpi-value { color: #f85149; }
+
+    .kpi-sub { font-size: 9px; color: #6e7681; line-height: 1.4; }
+
+    /* ============================================================
+       CHARTS GRID
+    ============================================================ */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chart-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 7px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-card-hdr {
+      padding: 7px 12px;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #21262d;
+    }
+
+    .chart-card-hdr h4 {
+      font-size: 10px;
+      font-weight: 700;
+      color: #c9d1d9;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .chart-card canvas {
+      display: block;
+      width: 100%;
+      height: 240px;
+    }
+
+    /* ============================================================
+       SUMMARY BOX
+    ============================================================ */
+    .summary-box {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-left: 4px solid #1f6feb;
+      border-radius: 7px;
+      padding: 13px 16px;
+      margin-bottom: 12px;
+    }
+
+    .summary-box h4 {
+      font-size: 10px;
+      font-weight: 700;
+      color: #1f6feb;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .summary-box p {
+      font-size: 13px;
+      color: #c9d1d9;
+      line-height: 1.75;
+    }
+
+    .summary-box strong { color: #ffffff; font-weight: 700; }
+
+    /* Section divider */
+    hr.sdiv {
+      border: none;
+      border-top: 1px solid #30363d;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+============================================================ -->
+<header class="header">
+  <span class="header-icon">🏛️</span>
+  <div class="header-text">
+    <h1>City Budget Healthcare Impact Dashboard</h1>
+    <p>Municipal Budget Modeling Tool — Fiscal Planning &amp; Policy Analysis</p>
+  </div>
+  <span class="header-badge">Live Model</span>
+</header>
+
+<!-- ============================================================
+     CONTROLS BAR
+============================================================ -->
+<div class="controls-bar">
+  <span class="ctrl-label">Scenario Preset:</span>
+  <select class="preset-select" id="presetSelect">
+    <option value="custom">— Custom —</option>
+    <option value="conservative">Conservative City (High Trend)</option>
+    <option value="midsize" selected>Mid-Size City (Moderate Trend)</option>
+    <option value="growing">Growing City (Low Trend)</option>
+  </select>
+
+  <div class="ctrl-sep"></div>
+  <span class="ctrl-label">Active Scenario:</span>
+  <button class="scenario-btn active-a" id="btnA" onclick="setActiveScenario('A')">A — Status Quo</button>
+  <button class="scenario-btn" id="btnB" onclick="setActiveScenario('B')">B — Improved</button>
+  <button class="scenario-btn" id="btnC" onclick="setActiveScenario('C')">C — Target</button>
+
+  <button class="btn-reset" onclick="resetToDefaults()">⟳ Reset to Defaults</button>
+</div>
+
+<!-- ============================================================
+     MAIN LAYOUT
+============================================================ -->
+<div class="main-layout">
+
+  <!-- ══════════════════════════════════════════════════
+       LEFT PANEL — INPUT SECTIONS
+  ══════════════════════════════════════════════════ -->
+  <aside class="left-panel">
+
+    <!-- Budget Fundamentals -->
+    <div class="input-section">
+      <div class="input-section-hdr">
+        <span class="section-icon">💰</span>
+        <h3>Budget Fundamentals</h3>
+      </div>
+      <div class="input-section-body">
+        <div class="input-field">
+          <label for="gfBudget">General Fund Operating Budget ($)</label>
+          <input type="number" id="gfBudget" value="25000000" min="0" step="100000">
+          <div class="input-hint">Total annual operating budget for the General Fund</div>
+        </div>
+        <div class="input-field">
+          <label for="gfGrowth">Annual GF Growth Assumption (%)</label>
+          <input type="number" id="gfGrowth" value="3.0" min="0" max="20" step="0.1">
+          <div class="input-hint">Expected annual growth rate of General Fund revenues</div>
+        </div>
+        <div class="input-field">
+          <label for="reserveBalance">Beginning Unassigned Fund Balance ($)</label>
+          <input type="number" id="reserveBalance" value="5000000" min="0" step="100000">
+          <div class="input-hint">Current unassigned / unreserved fund balance at start</div>
+        </div>
+        <div class="input-field">
+          <label for="reservePct">Reserve Policy Target (% of GF)</label>
+          <input type="number" id="reservePct" value="15" min="0" max="100" step="1">
+          <div class="input-hint">Minimum fund balance as % of General Fund (policy floor)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tax Base -->
+    <div class="input-section">
+      <div class="input-section-hdr">
+        <span class="section-icon">🏘️</span>
+        <h3>Tax Base</h3>
+      </div>
+      <div class="input-section-body">
+        <div class="input-field">
+          <label for="taxableValue">Total Taxable Value ($)</label>
+          <input type="number" id="taxableValue" value="750000000" min="0" step="1000000">
+          <div class="input-hint">Total certified taxable assessed value of all property</div>
+        </div>
+        <div class="input-field">
+          <label for="tvGrowth">Annual Taxable Value Growth (%)</label>
+          <input type="number" id="tvGrowth" value="2.0" min="0" max="20" step="0.1">
+          <div class="input-hint">Projected annual growth in taxable assessed value</div>
+        </div>
+        <div class="input-field">
+          <label for="taxRate">Current M&amp;O Tax Rate (per $100 valuation)</label>
+          <input type="number" id="taxRate" value="0.4500" min="0" max="2" step="0.0001">
+          <div class="input-hint">Current Maintenance &amp; Operations tax rate per $100</div>
+        </div>
+        <div class="input-field">
+          <label for="medianHome">Median Taxable Home Value ($)</label>
+          <input type="number" id="medianHome" value="225000" min="0" step="1000">
+          <div class="input-hint">Median taxable value of residential properties</div>
+        </div>
+        <div class="input-field">
+          <label for="moFunded">% of HC Increase Funded via M&amp;O (%)</label>
+          <input type="number" id="moFunded" value="100" min="0" max="100" step="1">
+          <div class="input-hint">Portion of HC cost increase covered by tax rate adjustment</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Healthcare Baseline -->
+    <div class="input-section">
+      <div class="input-section-hdr">
+        <span class="section-icon">🏥</span>
+        <h3>Healthcare Baseline</h3>
+      </div>
+      <div class="input-section-body">
+        <div class="input-field">
+          <label for="empCount">Benefit-Eligible Employee Count</label>
+          <input type="number" id="empCount" value="120" min="1" step="1">
+          <div class="input-hint">Employees enrolled in employer-sponsored health benefits</div>
+        </div>
+        <div class="input-field">
+          <label>Healthcare Cost Input Mode</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="inputMode" value="total" id="modeTotal" checked onchange="handleInputModeChange()">
+              <span>Total Employer Spend</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="inputMode" value="perEmployee" id="modePerEmp" onchange="handleInputModeChange()">
+              <span>Per-Employee Annual</span>
+            </label>
+          </div>
+        </div>
+        <div class="input-field" id="totalSpendField">
+          <label for="hcTotal">Total Employer Healthcare Spend ($)</label>
+          <input type="number" id="hcTotal" value="1800000" min="0" step="10000">
+          <div class="input-hint">Total annual employer contribution to health benefits</div>
+        </div>
+        <div class="input-field" id="perEmpField" style="display:none;">
+          <label for="hcPerEmployee">Per-Employee Annual Cost ($)</label>
+          <input type="number" id="hcPerEmployee" value="15000" min="0" step="100">
+          <div class="input-hint">Annual employer cost per employee × employee count</div>
+        </div>
+        <div class="input-field">
+          <label for="trendA">Scenario A — Status Quo Annual Trend (%)</label>
+          <input type="number" id="trendA" value="8.0" min="0" max="30" step="0.1" class="scenario-a">
+          <div class="input-hint">Worst-case projected annual HC cost growth rate</div>
+        </div>
+        <div class="input-field">
+          <label for="trendB">Scenario B — Improved Annual Trend (%)</label>
+          <input type="number" id="trendB" value="5.0" min="0" max="30" step="0.1" class="scenario-b">
+          <div class="input-hint">Moderate improvement projected annual HC cost growth</div>
+        </div>
+        <div class="input-field">
+          <label for="trendC">Scenario C — Target Annual Trend (%)</label>
+          <input type="number" id="trendC" value="3.0" min="0" max="30" step="0.1" class="scenario-c">
+          <div class="input-hint">Best-case / target projected annual HC cost growth</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Translation -->
+    <div class="input-section">
+      <div class="input-section-hdr">
+        <span class="section-icon">👮</span>
+        <h3>Service Translation</h3>
+      </div>
+      <div class="input-section-body">
+        <div class="input-field">
+          <label for="fteCost">Fully Loaded Cost per FTE ($)</label>
+          <input type="number" id="fteCost" value="75000" min="1" step="1000">
+          <div class="input-hint">Total annual cost per FTE (salary + benefits + overhead)</div>
+        </div>
+        <div class="input-field">
+          <label for="fteLabel">Service Unit Label</label>
+          <input type="text" id="fteLabel" value="Police Officers" maxlength="40" style="font-family:inherit;">
+          <div class="input-hint">Label for service unit used in tradeoff analysis</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projection Horizon -->
+    <div class="input-section">
+      <div class="input-section-hdr">
+        <span class="section-icon">📅</span>
+        <h3>Projection Horizon</h3>
+      </div>
+      <div class="input-section-body">
+        <div class="input-field">
+          <label>Projection Years</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="years" value="3" onchange="handleRecalc()">
+              <span>3 Years</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="years" value="5" checked onchange="handleRecalc()">
+              <span>5 Years</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="years" value="10" onchange="handleRecalc()">
+              <span>10 Years</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </aside><!-- /left-panel -->
+
+  <!-- ══════════════════════════════════════════════════
+       RIGHT PANEL — DASHBOARD
+  ══════════════════════════════════════════════════ -->
+  <div class="right-panel" id="rightPanel">
+
+    <!-- Scenario Strip -->
+    <div class="scenario-strip">
+      <div class="scenario-indicator a">
+        <div class="si-name">▲ Scenario A — Status Quo</div>
+        <div class="si-val" id="siA">8.0% annual trend</div>
+      </div>
+      <div class="scenario-indicator b">
+        <div class="si-name">▲ Scenario B — Improved</div>
+        <div class="si-val" id="siB">5.0% annual trend</div>
+      </div>
+      <div class="scenario-indicator c">
+        <div class="si-name">▲ Scenario C — Target</div>
+        <div class="si-val" id="siC">3.0% annual trend</div>
+      </div>
+    </div>
+
+    <!-- KPI Tiles -->
+    <div class="panel-title">📊 Key Performance Indicators — Active Scenario: <span id="activeScenarioLabel" style="color:#ffffff;margin-left:4px;">A (Status Quo)</span></div>
+    <div class="kpi-row" id="kpiRow">
+      <!-- Populated by JS -->
+    </div>
+
+    <hr class="sdiv">
+
+    <!-- Charts -->
+    <div class="panel-title">📈 Projection Charts — All Three Scenarios</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-hdr">
+          <h4>① Healthcare Spend vs General Fund Budget</h4>
+        </div>
+        <canvas id="chart1"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-hdr">
+          <h4>② Tax Rate &amp; Household Impact by Scenario</h4>
+        </div>
+        <canvas id="chart2"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-hdr">
+          <h4>③ Reserve Fund Trajectory (Flat-Rate Scenario)</h4>
+        </div>
+        <canvas id="chart3"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-hdr">
+          <h4>④ Year-1 Budget Pressure Bridge</h4>
+        </div>
+        <canvas id="chart4"></canvas>
+      </div>
+    </div>
+
+    <hr class="sdiv">
+
+    <!-- Read-Aloud Summary -->
+    <div class="panel-title">🔊 Fiscal Impact Summary — Read-Aloud Narrative</div>
+    <div class="summary-box">
+      <h4>🔊 Executive Summary</h4>
+      <p id="summaryText">Initializing model…</p>
+    </div>
+
+  </div><!-- /right-panel -->
+
+</div><!-- /main-layout -->
+
+<script>
+  /* ============================================================
+     DEFAULTS & PRESETS
+  ============================================================ */
+  const DEFAULTS = {
+    gfBudget:       25000000,
+    gfGrowth:       3.0,
+    reserveBalance: 5000000,
+    reservePct:     15,
+    taxableValue:   750000000,
+    tvGrowth:       2.0,
+    taxRate:        0.4500,
+    medianHome:     225000,
+    moFunded:       100,
+    empCount:       120,
+    inputMode:      'total',
+    hcTotal:        1800000,
+    hcPerEmployee:  15000,
+    trendA:         8.0,
+    trendB:         5.0,
+    trendC:         3.0,
+    fteCost:        75000,
+    fteLabel:       'Police Officers',
+    years:          5
+  };
+
+  const PRESETS = {
+    midsize: { ...DEFAULTS },
+    conservative: {
+      gfBudget: 15000000, gfGrowth: 2.5, reserveBalance: 2250000, reservePct: 15,
+      taxableValue: 400000000, tvGrowth: 1.5, taxRate: 0.5200, medianHome: 175000,
+      moFunded: 100, empCount: 80, inputMode: 'total', hcTotal: 1200000,
+      hcPerEmployee: 15000, trendA: 10.0, trendB: 7.0, trendC: 5.0,
+      fteCost: 65000, fteLabel: 'Police Officers', years: 5
+    },
+    growing: {
+      gfBudget: 50000000, gfGrowth: 4.5, reserveBalance: 10000000, reservePct: 15,
+      taxableValue: 1500000000, tvGrowth: 3.5, taxRate: 0.3800, medianHome: 320000,
+      moFunded: 100, empCount: 250, inputMode: 'total', hcTotal: 3750000,
+      hcPerEmployee: 15000, trendA: 6.0, trendB: 4.0, trendC: 2.5,
+      fteCost: 85000, fteLabel: 'Police Officers', years: 5
+    }
+  };
+
+  /* ============================================================
+     STATE
+  ============================================================ */
+  let activeScenario = 'A';
+
+  /* ============================================================
+     FORMATTING UTILITIES
+  ============================================================ */
+  const _fmtD0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const _fmtN1 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  function fmtDollar(v)       { return _fmtD0.format(v); }
+  function fmtPct(v)          { return _fmtN1.format(v) + '%'; }
+  function fmtFixed(v, d)     { return v.toFixed(d); }
+
+  function fmtCompact(v) {
+    const a = Math.abs(v);
+    if (a >= 1e9) return '$' + (v / 1e9).toFixed(2) + 'B';
+    if (a >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
+    if (a >= 1e3) return '$' + (v / 1e3).toFixed(1) + 'K';
+    return fmtDollar(v);
+  }
+
+  /* ============================================================
+     READ ALL INPUTS
+  ============================================================ */
+  function getInputs() {
+    const inputMode = document.querySelector('input[name="inputMode"]:checked')?.value || 'total';
+    const empCount  = parseFloat(document.getElementById('empCount').value) || 120;
+    const HC0 = inputMode === 'total'
+      ? (parseFloat(document.getElementById('hcTotal').value) || 1800000)
+      : (parseFloat(document.getElementById('hcPerEmployee').value) || 15000) * empCount;
+    const years = parseInt(document.querySelector('input[name="years"]:checked')?.value || '5');
+
+    return {
+      gfBudget:       parseFloat(document.getElementById('gfBudget').value)       || 25000000,
+      gfGrowth:       parseFloat(document.getElementById('gfGrowth').value)        || 3.0,
+      reserveBalance0:parseFloat(document.getElementById('reserveBalance').value)  || 5000000,
+      reservePct:     parseFloat(document.getElementById('reservePct').value)      || 15,
+      taxableValue:   parseFloat(document.getElementById('taxableValue').value)    || 750000000,
+      tvGrowth:       parseFloat(document.getElementById('tvGrowth').value)        || 2.0,
+      taxRate:        parseFloat(document.getElementById('taxRate').value)         || 0.45,
+      medianHome:     parseFloat(document.getElementById('medianHome').value)      || 225000,
+      moFunded:       parseFloat(document.getElementById('moFunded').value)        || 100,
+      empCount,
+      HC0,
+      trendA:         parseFloat(document.getElementById('trendA').value)          || 8.0,
+      trendB:         parseFloat(document.getElementById('trendB').value)          || 5.0,
+      trendC:         parseFloat(document.getElementById('trendC').value)          || 3.0,
+      fteCost:        parseFloat(document.getElementById('fteCost').value)         || 75000,
+      fteLabel:       document.getElementById('fteLabel').value                   || 'Police Officers',
+      years
+    };
+  }
+
+  /* ============================================================
+     CORE CALCULATION ENGINE
+     For each year t = 1..years:
+       GF[t]             = GF0 * (1 + gfGrowth)^t
+       TV[t]             = TV0 * (1 + tvGrowth)^t
+       HC[t]             = HC0 * (1 + trend)^t
+       hcIncrease[t]     = HC[t] - HC[t-1]
+       taxRateIncrease[t]= (hcIncrease[t] * moFunded%) / (TV[t] / 100)
+       cumTaxRateInc[t]  = sum of taxRateIncrease[1..t]
+       newTaxRate[t]     = taxRate + cumTaxRateInc[t]
+       householdImpact[t]= (taxRateIncrease[t] / 100) * medianHome
+       fteEquiv[t]       = hcIncrease[t] / fteCost
+       hcPct[t]          = HC[t] / GF[t] * 100
+       reserveBalance[t] = reserveBalance[t-1] - hcIncrease[t]  (flat-rate scenario)
+       reserveFloor[t]   = GF[t] * reservePct%
+  ============================================================ */
+  function calcScenario(inputs, trend) {
+    const { gfBudget, gfGrowth, taxableValue, tvGrowth, taxRate, medianHome,
+            moFunded, HC0, fteCost, reserveBalance0, reservePct, years } = inputs;
+
+    const gfG = gfGrowth  / 100;
+    const tvG = tvGrowth  / 100;
+    const tD  = trend     / 100;
+    const moD = moFunded  / 100;
+    const rpD = reservePct / 100;
+
+    const r = {
+      GF:                [gfBudget],
+      TV:                [taxableValue],
+      HC:                [HC0],
+      hcIncrease:        [0],
+      taxRateIncrease:   [0],
+      cumTaxRateIncrease:[0],
+      newTaxRate:        [taxRate],
+      householdImpact:   [0],
+      fteEquiv:          [0],
+      hcPct:             [HC0 / gfBudget * 100],
+      reserveBalance:    [reserveBalance0],
+      reserveFloor:      [gfBudget * rpD],
+      reserveAlert:      [false]
+    };
+
+    for (let t = 1; t <= years; t++) {
+      const GFt  = gfBudget     * Math.pow(1 + gfG, t);
+      const TVt  = taxableValue * Math.pow(1 + tvG, t);
+      const HCt  = HC0          * Math.pow(1 + tD,  t);
+      const hcInc       = HCt - r.HC[t - 1];
+      const taxRateInc  = (hcInc * moD) / (TVt / 100);
+      const cumTRInc    = r.cumTaxRateIncrease[t - 1] + taxRateInc;
+      const hhImpact    = (taxRateInc / 100) * medianHome;
+      const fteEq       = hcInc / (fteCost || 1);
+      const hcPctVal    = HCt / GFt * 100;
+      const resBal      = r.reserveBalance[t - 1] - hcInc;
+      const resFloor    = GFt * rpD;
+
+      r.GF.push(GFt);
+      r.TV.push(TVt);
+      r.HC.push(HCt);
+      r.hcIncrease.push(hcInc);
+      r.taxRateIncrease.push(taxRateInc);
+      r.cumTaxRateIncrease.push(cumTRInc);
+      r.newTaxRate.push(taxRate + cumTRInc);
+      r.householdImpact.push(hhImpact);
+      r.fteEquiv.push(fteEq);
+      r.hcPct.push(hcPctVal);
+      r.reserveBalance.push(resBal);
+      r.reserveFloor.push(resFloor);
+      r.reserveAlert.push(resBal < resFloor);
+    }
+    return r;
+  }
+
+  /* ============================================================
+     KPI TILES
+  ============================================================ */
+  function renderKPIs(inputs, active) {
+    const N  = inputs.years;
+    const hcPct1    = active.hcPct[1];
+    const hcPctN    = active.hcPct[N];
+    const hcInc1    = active.hcIncrease[1];
+    const taxInc1   = active.taxRateIncrease[1];
+    const newTR1    = active.newTaxRate[1];
+    const hhImp1    = active.householdImpact[1];
+    const fte1      = active.fteEquiv[1];
+    const resBal1   = active.reserveBalance[1];
+    const resFloor1 = active.reserveFloor[1];
+
+    /* Color logic per spec */
+    const hcPctColor  = hcPct1 < 8 ? 'green' : hcPct1 <= 12 ? 'amber' : 'red';
+    const hcIncPctGF  = hcInc1 / inputs.gfBudget * 100;
+    const hcIncColor  = hcIncPctGF < 2 ? 'green' : hcIncPctGF <= 5 ? 'amber' : 'red';
+    const taxColor    = taxInc1 < 0.01 ? 'green' : taxInc1 <= 0.05 ? 'amber' : 'red';
+    const hhColor     = hhImp1 < 50 ? 'green' : hhImp1 <= 150 ? 'amber' : 'red';
+    const fteColor    = fte1 < 1 ? 'green' : fte1 <= 3 ? 'amber' : 'red';
+    const resColor    = resBal1 > resFloor1 * 1.1 ? 'green' : resBal1 >= resFloor1 ? 'amber' : 'red';
+    const resStatus   = resBal1 > resFloor1 * 1.1 ? 'Above Policy Floor ✓'
+                      : resBal1 >= resFloor1       ? 'Near Policy Floor ⚠'
+                      :                              'Below Policy Floor ✗';
+
+    const tiles = [
+      {
+        label: 'HC % of General Fund',
+        value: fmtPct(hcPct1),
+        sub:   `Now ${fmtPct(active.hcPct[0])} → ${fmtPct(hcPctN)} in Yr ${N}`,
+        color: hcPctColor
+      },
+      {
+        label: 'Next-Year HC Increase',
+        value: fmtDollar(hcInc1),
+        sub:   `Over prior year spend of ${fmtDollar(inputs.HC0)}`,
+        color: hcIncColor
+      },
+      {
+        label: 'Tax Rate Impact',
+        value: `+$${fmtFixed(taxInc1, 4)}`,
+        sub:   `New rate: $${fmtFixed(newTR1, 4)} per $100`,
+        color: taxColor
+      },
+      {
+        label: 'Household Impact',
+        value: `$${Math.round(hhImp1)}/yr`,
+        sub:   `Based on ${fmtDollar(inputs.medianHome)} median home`,
+        color: hhColor
+      },
+      {
+        label: 'Service Tradeoff',
+        value: `${fte1.toFixed(1)} FTE`,
+        sub:   `${fte1.toFixed(1)} ${inputs.fteLabel} @ ${fmtDollar(inputs.fteCost)}`,
+        color: fteColor
+      },
+      {
+        label: 'Reserve vs Policy',
+        value: fmtCompact(resBal1),
+        sub:   `Floor: ${fmtDollar(resFloor1)} | ${resStatus}`,
+        color: resColor
+      }
+    ];
+
+    document.getElementById('kpiRow').innerHTML = tiles.map(t => `
+      <div class="kpi-tile ${t.color}">
+        <div class="kpi-label">${t.label}</div>
+        <div class="kpi-value">${t.value}</div>
+        <div class="kpi-sub">${t.sub}</div>
+      </div>`).join('');
+  }
+
+  /* ============================================================
+     READ-ALOUD SUMMARY
+  ============================================================ */
+  function renderSummary(inputs, active, scenName, trendPct) {
+    const N          = inputs.years;
+    const nextFY     = new Date().getFullYear() + 1;
+    const hcInc1     = active.hcIncrease[1];
+    const hcPct1     = active.hcPct[1];
+    const taxInc1    = active.taxRateIncrease[1];
+    const hhImp1     = active.householdImpact[1];
+    const fte1       = active.fteEquiv[1];
+    const resBal1    = active.reserveBalance[1];
+    const resFloor1  = active.reserveFloor[1];
+    const resPos     = resBal1 > resFloor1 * 1.1 ? 'well above'
+                     : resBal1 >= resFloor1       ? 'approaching'
+                     :                              'below';
+
+    document.getElementById('summaryText').innerHTML =
+      `Under <strong>Scenario ${activeScenario} (${scenName})</strong>, the City faces a ` +
+      `<strong>${trendPct.toFixed(1)}%</strong> annual healthcare cost increase. ` +
+      `In <strong>FY${nextFY}</strong>, employer healthcare costs are projected to grow by ` +
+      `<strong>${fmtDollar(hcInc1)}</strong>, representing ` +
+      `<strong>${hcPct1.toFixed(1)}%</strong> of the General Fund. ` +
+      `To cover this increase through the M&amp;O tax rate, the rate would need to increase by ` +
+      `<strong>$${fmtFixed(taxInc1, 4)} per $100 valuation</strong> — adding approximately ` +
+      `<strong>$${Math.round(hhImp1)} per year</strong> to the tax bill for a median-value home. ` +
+      `This is equivalent to <strong>${fte1.toFixed(1)} ${inputs.fteLabel}</strong> positions. ` +
+      `If the tax rate is held flat, the City's unassigned fund balance would draw to ` +
+      `<strong>${fmtDollar(resBal1)}</strong> by end of Year 1 — ` +
+      `<strong>${resPos}</strong> the ${inputs.reservePct}% reserve policy floor of ` +
+      `<strong>${fmtDollar(resFloor1)}</strong>.`;
+  }
+
+  /* ============================================================
+     SCENARIO STRIP
+  ============================================================ */
+  function updateScenarioStrip(inputs) {
+    const yr1a = inputs.HC0 * (1 + inputs.trendA / 100);
+    const yr1b = inputs.HC0 * (1 + inputs.trendB / 100);
+    const yr1c = inputs.HC0 * (1 + inputs.trendC / 100);
+    document.getElementById('siA').textContent =
+      `${inputs.trendA.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1a)}`;
+    document.getElementById('siB').textContent =
+      `${inputs.trendB.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1b)}`;
+    document.getElementById('siC').textContent =
+      `${inputs.trendC.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1c)}`;
+  }
+
+  /* ============================================================
+     CANVAS / CHART UTILITIES
+  ============================================================ */
+  const C = {
+    bg:      '#0d1117',
+    plotBg:  '#0f1623',
+    grid:    'rgba(255,255,255,0.06)',
+    axis:    'rgba(255,255,255,0.25)',
+    text:    '#8b949e',
+    white:   '#ffffff',
+    A:       '#f85149',
+    B:       '#d29922',
+    C:       '#3fb950',
+    GF:      '#58a6ff',
+    floor:   '#ff6b6b'
+  };
+
+  /* Set canvas pixel dimensions to match its CSS-rendered size */
+  function syncCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const w    = Math.max(300, Math.floor(rect.width));
+    const h    = Math.max(180, Math.floor(rect.height));
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+      canvas.width  = w * dpr;
+      canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+    }
+    return { w, h };
+  }
+
+  function clearCanvas(canvas) {
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    return ctx;
+  }
+
+  /* Map data value → pixel Y (higher value = higher on screen = lower pixel y) */
+  function mY(val, yMin, yMax, top, bottom) {
+    if (yMax === yMin) return (top + bottom) / 2;
+    return bottom - ((val - yMin) / (yMax - yMin)) * (bottom - top);
+  }
+
+  /* Map index i in [0, total-1] → pixel X */
+  function mX(i, total, left, right) {
+    if (total <= 1) return (left + right) / 2;
+    return left + (i / (total - 1)) * (right - left);
+  }
+
+  /* Round max up to a "nice" number */
+  function niceMax(val) {
+    if (!val || val <= 0) return 100;
+    const mag = Math.pow(10, Math.floor(Math.log10(val)));
+    return Math.ceil(val / mag) * mag;
+  }
+
+  /* Generate evenly-spaced tick values */
+  function makeTicks(min, max, count) {
+    const step = (max - min) / count;
+    return Array.from({ length: count + 1 }, (_, i) => min + step * i);
+  }
+
+  /* Draw chart frame: background, grid, axes, labels. Returns plot area. */
+  function drawFrame(ctx, cw, ch, pad, xLabels, yTicks, yMin, yMax, yFmt) {
+    const px = pad.l, py = pad.t;
+    const pw = cw - pad.l - pad.r;
+    const ph = ch - pad.t - pad.b;
+    const bx = px + pw, by = py + ph; // bottom-right corner
+
+    /* Plot background */
+    ctx.fillStyle = C.plotBg;
+    ctx.fillRect(px, py, pw, ph);
+
+    /* Horizontal grid lines */
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    yTicks.forEach(tick => {
+      const y = mY(tick, yMin, yMax, py, by);
+      ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(bx, y); ctx.stroke();
+    });
+
+    /* Axes */
+    ctx.strokeStyle = C.axis;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(px, py); ctx.lineTo(px, by); ctx.lineTo(bx, by);
+    ctx.stroke();
+
+    /* Y axis labels */
+    ctx.fillStyle = C.text;
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    yTicks.forEach(tick => {
+      const y = mY(tick, yMin, yMax, py, by);
+      ctx.fillText(yFmt(tick), px - 5, y);
+    });
+
+    /* X axis labels */
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    xLabels.forEach((lbl, i) => {
+      const x = mX(i, xLabels.length, px, bx);
+      ctx.fillText(lbl, x, by + 5);
+    });
+
+    return { px, py, pw, ph, bx, by };
+  }
+
+  /* Draw a polyline given {x,y}[] points */
+  function drawPolyline(ctx, pts, color, dashed, lw) {
+    if (pts.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = lw || 2;
+    ctx.lineJoin    = 'round';
+    ctx.setLineDash(dashed ? [7, 4] : []);
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* Draw a small filled circle */
+  function drawDot(ctx, x, y, r, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /* Draw inline legend at (startX, y) */
+  function drawLegend(ctx, items, startX, y) {
+    ctx.save();
+    ctx.font = '10px sans-serif';
+    ctx.textBaseline = 'middle';
+    let cx = startX;
+    items.forEach(item => {
+      ctx.strokeStyle = item.color;
+      ctx.lineWidth   = 2;
+      ctx.setLineDash(item.dashed ? [5, 3] : []);
+      ctx.beginPath();
+      ctx.moveTo(cx, y); ctx.lineTo(cx + 16, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      cx += 20;
+      ctx.fillStyle   = C.text;
+      ctx.textAlign   = 'left';
+      ctx.fillText(item.label, cx, y);
+      cx += ctx.measureText(item.label).width + 10;
+    });
+    ctx.restore();
+  }
+
+  /* Convert a data array to {x,y}[] pixel points */
+  function toPoints(arr, yMin, yMax, px, bx, py, by) {
+    return arr.map((v, i) => ({
+      x: mX(i, arr.length, px, bx),
+      y: mY(v, yMin, yMax, py, by)
+    }));
+  }
+
+  /* ============================================================
+     CHART 1 — Healthcare Spend vs General Fund (Line Chart)
+     Lines: GF (blue solid), HC Scenario A/B/C (colored;
+     active = solid, inactive = dashed)
+  ============================================================ */
+  function drawChart1(canvas, inputs, scA, scB, scC) {
+    const { w, h } = syncCanvas(canvas);
+    const ctx = clearCanvas(canvas);
+    const pad = { l: 72, r: 14, t: 28, b: 32 };
+    const N   = inputs.years;
+
+    let yMax = 0;
+    for (let t = 0; t <= N; t++) {
+      yMax = Math.max(yMax, scA.GF[t], scA.HC[t], scB.HC[t], scC.HC[t]);
+    }
+    yMax = niceMax(yMax * 1.08);
+    const yMin   = 0;
+    const yTicks = makeTicks(yMin, yMax, 5);
+    const xLabels = Array.from({ length: N + 1 }, (_, i) => `Yr${i}`);
+
+    const { px, py, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
+      v => fmtCompact(v));
+
+    const pts = arr => toPoints(arr, yMin, yMax, px, bx, py, by);
+
+    /* GF line */
+    drawPolyline(ctx, pts(scA.GF), C.GF, false, 2.5);
+
+    /* HC scenario lines */
+    const scenLines = [
+      { arr: scA.HC, color: C.A, key: 'A' },
+      { arr: scB.HC, color: C.B, key: 'B' },
+      { arr: scC.HC, color: C.C, key: 'C' }
+    ];
+    scenLines.forEach(s => {
+      const isDashed = s.key !== activeScenario;
+      drawPolyline(ctx, pts(s.arr), s.color, isDashed, isDashed ? 1.5 : 2.5);
+    });
+
+    /* Dots on active HC scenario */
+    const activeHC    = activeScenario === 'A' ? scA.HC : activeScenario === 'B' ? scB.HC : scC.HC;
+    const activeColor = activeScenario === 'A' ? C.A    : activeScenario === 'B' ? C.B    : C.C;
+    pts(activeHC).forEach(p => drawDot(ctx, p.x, p.y, 3.5, activeColor));
+    pts(scA.GF).forEach(p  => drawDot(ctx, p.x, p.y, 2.5, C.GF));
+
+    drawLegend(ctx,
+      [{ label: 'GF Budget', color: C.GF,  dashed: false },
+       { label: 'HC Scen A',  color: C.A,   dashed: activeScenario !== 'A' },
+       { label: 'HC Scen B',  color: C.B,   dashed: activeScenario !== 'B' },
+       { label: 'HC Scen C',  color: C.C,   dashed: activeScenario !== 'C' }],
+      px, py - 14);
+  }
+
+  /* ============================================================
+     CHART 2 — Tax Rate & Household Impact by Scenario (Bar)
+     Groups: Year 1 | Year N  ×  Scenarios A, B, C
+  ============================================================ */
+  function drawChart2(canvas, inputs, scA, scB, scC) {
+    const { w, h } = syncCanvas(canvas);
+    const ctx = clearCanvas(canvas);
+    const N   = inputs.years;
+    const pad = { l: 60, r: 14, t: 28, b: 44 };
+
+    /* 6 bars: A-yr1, B-yr1, C-yr1, A-yrN, B-yrN, C-yrN */
+    const bars = [
+      { lbl: 'A Yr1',     val: scA.householdImpact[1], color: C.A, alpha: 1.0 },
+      { lbl: 'B Yr1',     val: scB.householdImpact[1], color: C.B, alpha: 1.0 },
+      { lbl: 'C Yr1',     val: scC.householdImpact[1], color: C.C, alpha: 1.0 },
+      { lbl: `A Yr${N}`,  val: scA.householdImpact[N], color: C.A, alpha: 0.45 },
+      { lbl: `B Yr${N}`,  val: scB.householdImpact[N], color: C.B, alpha: 0.45 },
+      { lbl: `C Yr${N}`,  val: scC.householdImpact[N], color: C.C, alpha: 0.45 }
+    ];
+
+    const yMax   = niceMax(Math.max(...bars.map(b => b.val), 1) * 1.18);
+    const yMin   = 0;
+    const yTicks = makeTicks(yMin, yMax, 5);
+    const xLabels = bars.map(b => b.lbl);
+
+    const { px, py, pw, ph, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
+      v => '$' + Math.round(v));
+
+    const slotW = pw / bars.length;
+    const barW  = slotW * 0.62;
+
+    /* Group divider between Yr1 and YrN */
+    const midX = px + pw / 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(midX, py); ctx.lineTo(midX, by); ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* Group labels */
+    ctx.fillStyle = C.text;
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('Year 1 Household Impact ($/yr)', px + pw * 0.25, py - 2);
+    ctx.fillText(`Year ${N} Household Impact ($/yr)`, px + pw * 0.75, py - 2);
+
+    bars.forEach((bar, i) => {
+      const bx0 = px + i * slotW + (slotW - barW) / 2;
+      const barH = Math.max(0, (bar.val / yMax) * ph);
+      const bTop = by - barH;
+
+      ctx.globalAlpha = bar.alpha;
+      ctx.fillStyle   = bar.color;
+      ctx.fillRect(bx0, bTop, barW, barH);
+
+      /* Bar border */
+      ctx.strokeStyle = bar.color;
+      ctx.lineWidth   = 1;
+      ctx.globalAlpha = bar.alpha * 1.2 > 1 ? 1 : bar.alpha * 1.2;
+      ctx.strokeRect(bx0, bTop, barW, barH);
+      ctx.globalAlpha = 1.0;
+
+      /* Value label */
+      if (bar.val > 0) {
+        ctx.fillStyle = bar.color;
+        ctx.globalAlpha = bar.alpha >= 1.0 ? 1.0 : 0.85;
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('$' + Math.round(bar.val), bx0 + barW / 2, bTop - 2);
+        ctx.globalAlpha = 1.0;
+      }
+    });
+
+    /* Y axis label */
+    ctx.save();
+    ctx.translate(11, py + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle   = C.text;
+    ctx.font        = '9px sans-serif';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Annual Household $ Impact', 0, 0);
+    ctx.restore();
+  }
+
+  /* ============================================================
+     CHART 3 — Reserve Fund Trajectory (Line Chart)
+     3 scenario lines + policy floor (dashed red)
+     Alert circles where balance < floor
+  ============================================================ */
+  function drawChart3(canvas, inputs, scA, scB, scC) {
+    const { w, h } = syncCanvas(canvas);
+    const ctx = clearCanvas(canvas);
+    const N   = inputs.years;
+    const pad = { l: 72, r: 14, t: 28, b: 32 };
+
+    let yMin = Infinity, yMax = -Infinity;
+    for (let t = 0; t <= N; t++) {
+      yMin = Math.min(yMin, scA.reserveBalance[t], scB.reserveBalance[t], scC.reserveBalance[t]);
+      yMax = Math.max(yMax, scA.reserveBalance[t], scB.reserveBalance[t],
+                           scC.reserveBalance[t],  scA.reserveFloor[t]);
+    }
+    const range = yMax - yMin || 1;
+    yMin = yMin - range * 0.08;
+    yMax = yMax + range * 0.08;
+
+    const yTicks  = makeTicks(yMin, yMax, 5);
+    const xLabels = Array.from({ length: N + 1 }, (_, i) => `Yr${i}`);
+
+    const { px, py, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
+      v => fmtCompact(v));
+
+    const pts = arr => toPoints(arr, yMin, yMax, px, bx, py, by);
+
+    /* Policy floor */
+    drawPolyline(ctx, pts(scA.reserveFloor), C.floor, true, 2);
+
+    /* Reserve lines */
+    [{ sc: scA, color: C.A }, { sc: scB, color: C.B }, { sc: scC, color: C.C }]
+      .forEach(({ sc, color }) => {
+        drawPolyline(ctx, pts(sc.reserveBalance), color, false, 2);
+        /* Alert circles where balance < floor */
+        sc.reserveAlert.forEach((alert, t) => {
+          if (alert) {
+            const x = mX(t, N + 1, px, bx);
+            const y = mY(sc.reserveBalance[t], yMin, yMax, py, by);
+            ctx.strokeStyle = color;
+            ctx.lineWidth   = 2;
+            ctx.fillStyle   = 'rgba(248,81,73,0.25)';
+            ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+          }
+        });
+      });
+
+    /* Dots on active scenario */
+    const activeSc    = activeScenario === 'A' ? scA : activeScenario === 'B' ? scB : scC;
+    const activeColor = activeScenario === 'A' ? C.A  : activeScenario === 'B' ? C.B  : C.C;
+    pts(activeSc.reserveBalance).forEach(p => drawDot(ctx, p.x, p.y, 3.5, activeColor));
+
+    drawLegend(ctx,
+      [{ label: 'Reserve A',    color: C.A,     dashed: false },
+       { label: 'Reserve B',    color: C.B,     dashed: false },
+       { label: 'Reserve C',    color: C.C,     dashed: false },
+       { label: 'Policy Floor', color: C.floor, dashed: true  }],
+      px, py - 14);
+  }
+
+  /* ============================================================
+     CHART 4 — Year-1 Budget Pressure Bridge (Waterfall)
+     Bars: GF Base → +GF Growth → -HC Increase → Net Position
+  ============================================================ */
+  function drawChart4(canvas, inputs, scA, scB, scC) {
+    const { w, h } = syncCanvas(canvas);
+    const ctx = clearCanvas(canvas);
+    const pad = { l: 72, r: 18, t: 28, b: 50 };
+
+    const GF0    = inputs.gfBudget;
+    const GF1    = scA.GF[1]; /* GF growth same for all scenarios */
+    const gfGrow = GF1 - GF0;
+    const activeSc = activeScenario === 'A' ? scA : activeScenario === 'B' ? scB : scC;
+    const hcInc  = activeSc.hcIncrease[1];
+    const netPos = GF1 - hcInc;
+
+    /*  Waterfall bars:
+        1. GF Base (0 → GF0)     — blue
+        2. GF Growth (+)         — green floating on GF0
+        3. HC Increase (−)       — red dropping from GF1
+        4. Net Position (0 → net)— result bar
+    */
+    const waterfallBars = [
+      { label: 'GF Base\nYear 0', start: 0,    end: GF0,  color: C.GF,                     type: 'base' },
+      { label: 'GF\nGrowth +',   start: GF0,   end: GF1,  color: '#3fb950',                type: 'pos'  },
+      { label: `HC\nIncrease −`, start: GF1,   end: netPos, color: '#f85149',              type: 'neg'  },
+      { label: 'Net\nPosition',  start: 0,     end: netPos, color: netPos >= GF0 ? '#3fb950' : '#d29922', type: 'result' }
+    ];
+
+    const allVals = waterfallBars.flatMap(b => [b.start, b.end]);
+    let yMin = Math.min(0, ...allVals);
+    let yMax = Math.max(...allVals) * 1.1;
+    if (yMax === 0) yMax = 1;
+
+    const yTicks  = makeTicks(yMin, yMax, 5);
+    const xLabels = waterfallBars.map(b => '');  /* custom x labels below */
+
+    const { px, py, pw, ph, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
+      v => fmtCompact(v));
+
+    /* Zero reference line */
+    if (yMin < 0) {
+      const zeroY = mY(0, yMin, yMax, py, by);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(px, zeroY); ctx.lineTo(bx, zeroY); ctx.stroke();
+    }
+
+    const nBars   = waterfallBars.length;
+    const slotW   = pw / nBars;
+    const barW    = slotW * 0.58;
+
+    waterfallBars.forEach((bar, i) => {
+      const bx0   = px + i * slotW + (slotW - barW) / 2;
+      const yTop  = mY(Math.max(bar.start, bar.end), yMin, yMax, py, by);
+      const yBot  = mY(Math.min(bar.start, bar.end), yMin, yMax, py, by);
+      const barH  = Math.max(1, yBot - yTop);
+
+      /* Bar fill */
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle   = bar.color;
+      ctx.fillRect(bx0, yTop, barW, barH);
+
+      /* Bar border */
+      ctx.globalAlpha = 1.0;
+      ctx.strokeStyle = bar.color;
+      ctx.lineWidth   = 1.5;
+      ctx.strokeRect(bx0, yTop, barW, barH);
+
+      /* Value label */
+      const valLabel = fmtCompact(bar.end);
+      ctx.fillStyle  = C.white;
+      ctx.font       = 'bold 10px monospace';
+      ctx.textAlign  = 'center';
+      ctx.textBaseline = bar.end >= bar.start ? 'bottom' : 'top';
+      const lblY     = bar.end >= bar.start ? yTop - 3 : yBot + 3;
+      ctx.fillText(valLabel, bx0 + barW / 2, lblY);
+
+      /* Custom X label (multi-line) */
+      const lines = bar.label.split('\n');
+      ctx.fillStyle   = C.text;
+      ctx.font        = '9px sans-serif';
+      ctx.textAlign   = 'center';
+      ctx.textBaseline = 'top';
+      lines.forEach((line, j) => {
+        ctx.fillText(line, bx0 + barW / 2, by + 6 + j * 11);
+      });
+
+      /* Connector dashes to next bar (waterfall connector) */
+      if (i < nBars - 1 && bar.type !== 'result') {
+        const nextBx0  = px + (i + 1) * slotW + (slotW - barW) / 2;
+        const connY    = mY(bar.end, yMin, yMax, py, by);
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.lineWidth   = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(bx0 + barW, connY);
+        ctx.lineTo(nextBx0, connY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+
+    /* Annotation: active scenario label */
+    ctx.fillStyle = C.text;
+    ctx.font      = '9px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`Scenario ${activeScenario} — Year 1`, bx, py + 2);
+  }
+
+  /* ============================================================
+     MAIN RENDER — called on every input change
+  ============================================================ */
+  function render() {
+    const inputs = getInputs();
+
+    /* Compute projections for all 3 scenarios */
+    const scA = calcScenario(inputs, inputs.trendA);
+    const scB = calcScenario(inputs, inputs.trendB);
+    const scC = calcScenario(inputs, inputs.trendC);
+
+    const activeSc    = activeScenario === 'A' ? scA : activeScenario === 'B' ? scB : scC;
+    const activeTrend = activeScenario === 'A' ? inputs.trendA
+                      : activeScenario === 'B' ? inputs.trendB : inputs.trendC;
+    const scenNames   = { A: 'Status Quo', B: 'Improved', C: 'Target' };
+
+    /* Active scenario label in title */
+    document.getElementById('activeScenarioLabel').textContent =
+      `${activeScenario} (${scenNames[activeScenario]})`;
+
+    /* Update scenario strip */
+    updateScenarioStrip(inputs);
+
+    /* KPIs */
+    renderKPIs(inputs, activeSc);
+
+    /* Narrative summary */
+    renderSummary(inputs, activeSc, scenNames[activeScenario], activeTrend);
+
+    /* Charts */
+    drawChart1(document.getElementById('chart1'), inputs, scA, scB, scC);
+    drawChart2(document.getElementById('chart2'), inputs, scA, scB, scC);
+    drawChart3(document.getElementById('chart3'), inputs, scA, scB, scC);
+    drawChart4(document.getElementById('chart4'), inputs, scA, scB, scC);
+  }
+
+  /* ============================================================
+     ACTIVE SCENARIO BUTTONS
+  ============================================================ */
+  function setActiveScenario(s) {
+    activeScenario = s;
+    document.getElementById('btnA').className =
+      'scenario-btn' + (s === 'A' ? ' active-a' : '');
+    document.getElementById('btnB').className =
+      'scenario-btn' + (s === 'B' ? ' active-b' : '');
+    document.getElementById('btnC').className =
+      'scenario-btn' + (s === 'C' ? ' active-c' : '');
+    render();
+  }
+
+  /* ============================================================
+     INPUT MODE TOGGLE (Total Spend vs Per-Employee)
+  ============================================================ */
+  function handleInputModeChange() {
+    const mode = document.querySelector('input[name="inputMode"]:checked')?.value;
+    document.getElementById('totalSpendField').style.display =
+      mode === 'total' ? '' : 'none';
+    document.getElementById('perEmpField').style.display =
+      mode === 'perEmployee' ? '' : 'none';
+    render();
+  }
+
+  /* ============================================================
+     PRESET LOADER
+  ============================================================ */
+  function applyPreset(key) {
+    const p = PRESETS[key];
+    if (!p) return;
+
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    };
+
+    set('gfBudget',       p.gfBudget);
+    set('gfGrowth',       p.gfGrowth);
+    set('reserveBalance', p.reserveBalance);
+    set('reservePct',     p.reservePct);
+    set('taxableValue',   p.taxableValue);
+    set('tvGrowth',       p.tvGrowth);
+    set('taxRate',        p.taxRate);
+    set('medianHome',     p.medianHome);
+    set('moFunded',       p.moFunded);
+    set('empCount',       p.empCount);
+    set('hcTotal',        p.hcTotal);
+    set('hcPerEmployee',  p.hcPerEmployee);
+    set('trendA',         p.trendA);
+    set('trendB',         p.trendB);
+    set('trendC',         p.trendC);
+    set('fteCost',        p.fteCost);
+    set('fteLabel',       p.fteLabel);
+
+    /* Input mode radio */
+    const modeEl = document.getElementById(p.inputMode === 'total' ? 'modeTotal' : 'modePerEmp');
+    if (modeEl) modeEl.checked = true;
+    handleInputModeChange();
+
+    /* Years radio */
+    document.querySelectorAll('input[name="years"]').forEach(r => {
+      r.checked = (parseInt(r.value) === p.years);
+    });
+
+    render();
+  }
+
+  /* ============================================================
+     RESET
+  ============================================================ */
+  function resetToDefaults() {
+    document.getElementById('presetSelect').value = 'midsize';
+    setActiveScenario('A');
+    applyPreset('midsize');
+  }
+
+  /* ============================================================
+     RECALCULATE (input change handler)
+  ============================================================ */
+  function handleRecalc() {
+    /* Switch preset dropdown to "Custom" when user edits any input */
+    const sel = document.getElementById('presetSelect');
+    if (sel.value !== 'custom') sel.value = 'custom';
+    render();
+  }
+
+  /* ============================================================
+     EVENT LISTENERS
+  ============================================================ */
+  /* All numeric / text inputs */
+  document.querySelectorAll('input[type="number"], input[type="text"]').forEach(el => {
+    el.addEventListener('input',  handleRecalc);
+    el.addEventListener('change', handleRecalc);
+  });
+
+  /* Preset dropdown */
+  document.getElementById('presetSelect').addEventListener('change', function () {
+    if (this.value !== 'custom') applyPreset(this.value);
+  });
+
+  /* Redraw charts on window resize */
+  let _resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(render, 120);
+  });
+
+  /* ============================================================
+     BOOT — initial render with defaults
+  ============================================================ */
+  /* Use requestAnimationFrame so the browser has performed layout
+     and canvas elements have their CSS-computed dimensions available
+     before we attempt to read getBoundingClientRect() for drawing. */
+  document.addEventListener('DOMContentLoaded', () => {
+    requestAnimationFrame(() => {
+      setActiveScenario('A');
+      applyPreset('midsize');
+    });
+  });
+
+</script>
+</body>
+</html>
