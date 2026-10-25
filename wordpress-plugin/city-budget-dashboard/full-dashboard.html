@@ -222,7 +222,7 @@
 
     .input-hint {
       font-size: 9px;
-      color: #6e7681;
+      color: #a3acb6;
       margin-top: 2px;
       font-style: italic;
     }
@@ -295,7 +295,7 @@
     ============================================================ */
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
       gap: 8px;
       margin-bottom: 10px;
     }
@@ -329,14 +329,14 @@
       line-height: 1.1;
       margin-bottom: 4px;
       font-variant-numeric: tabular-nums;
-      word-break: break-all;
+      overflow-wrap: anywhere;
       flex: 1;
     }
     .kpi-tile.green .kpi-value { color: #3fb950; }
     .kpi-tile.amber .kpi-value { color: #d29922; }
     .kpi-tile.red   .kpi-value { color: #f85149; }
 
-    .kpi-sub { font-size: 9px; color: #6e7681; line-height: 1.4; }
+    .kpi-sub { font-size: 9px; color: #a3acb6; line-height: 1.4; }
 
     /* ============================================================
        CHARTS GRID
@@ -451,6 +451,104 @@
       border-top: 1px solid #30363d;
       margin: 10px 0;
     }
+
+    /* ============================================================
+       ADDED: selects in inputs, scenario pairs, tables, health fund
+    ============================================================ */
+    .input-field select {
+      width: 100%;
+      background: #161b22;
+      border: 1px solid #30363d;
+      color: #ffffff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      height: 28px;
+    }
+    .input-field select:focus { outline: none; border-color: #1f6feb; }
+
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .scen-hdr {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; margin: 10px 0 4px;
+    }
+    .scen-hdr.a { color: #f85149; }
+    .scen-hdr.b { color: #d29922; }
+    .scen-hdr.c { color: #3fb950; }
+
+    .btn-secondary {
+      padding: 6px 12px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #ffffff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-secondary:hover { background: #30363d; border-color: #8b949e; }
+
+    .table-wrap {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 7px;
+      overflow-x: auto;
+      margin-bottom: 10px;
+    }
+    table.yr-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.yr-table th, table.yr-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #30363d;
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    table.yr-table th {
+      background: #21262d;
+      color: #c9d1d9;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    table.yr-table td { color: #ffffff; }
+    table.yr-table th:first-child, table.yr-table td:first-child { text-align: left; }
+    table.yr-table td.neg { color: #f85149; font-weight: 700; }
+    .table-actions { display: flex; gap: 8px; padding: 8px 10px; flex-wrap: wrap; }
+
+    .hf-note {
+      font-size: 13px;
+      color: #c9d1d9;
+      line-height: 1.6;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-left: 4px solid #d29922;
+      border-radius: 7px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+    }
+    .hf-note strong { color: #ffffff; }
+
+    .toast {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      background: #1f6feb; color: #ffffff; padding: 8px 16px; border-radius: 6px;
+      font-size: 12px; font-weight: 700; opacity: 0; transition: opacity 0.2s;
+      pointer-events: none; z-index: 10;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ============================================================
+       RESPONSIVE: tablets, phones, narrow WordPress columns
+    ============================================================ */
+    @media (max-width: 1100px) {
+      .main-layout { flex-direction: column; }
+      .left-panel { width: 100%; min-width: 0; border-right: none; border-bottom: 2px solid #30363d; }
+      .header, .controls-bar { height: auto; flex-wrap: wrap; }
+      .btn-reset { margin-left: 0; }
+    }
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .scenario-strip { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
@@ -508,6 +606,11 @@
       </div>
       <div class="input-section-body">
         <div class="input-field">
+          <label for="fyStart">First Projected Fiscal Year (FY ending)</label>
+          <input type="number" id="fyStart" value="2028" min="2000" max="2100" step="1">
+          <div class="input-hint">Budget year being adopted, e.g. 2028 for FY2027-28</div>
+        </div>
+        <div class="input-field">
           <label for="gfBudget">General Fund Operating Budget ($)</label>
           <input type="number" id="gfBudget" value="25000000" min="0" step="100000">
           <div class="input-hint">Total annual operating budget for the General Fund</div>
@@ -515,7 +618,7 @@
         <div class="input-field">
           <label for="gfGrowth">Annual GF Growth Assumption (%)</label>
           <input type="number" id="gfGrowth" value="3.0" min="0" max="20" step="0.1">
-          <div class="input-hint">Expected annual growth rate of General Fund revenues</div>
+          <div class="input-hint">Annual growth in GF revenue at a flat tax rate (and in non-healthcare costs)</div>
         </div>
         <div class="input-field">
           <label for="reserveBalance">Beginning Unassigned Fund Balance ($)</label>
@@ -562,6 +665,11 @@
           <input type="number" id="moFunded" value="100" min="0" max="100" step="1">
           <div class="input-hint">Portion of HC cost increase covered by tax rate adjustment</div>
         </div>
+        <div class="input-field">
+          <label for="vatCap">Voter-Approval M&amp;O Growth Cap (%)</label>
+          <input type="number" id="vatCap" value="3.5" min="0" max="20" step="0.1">
+          <div class="input-hint">Texas cities: 3.5% under current law. Confirm against your Truth-in-Taxation worksheet.</div>
+        </div>
       </div>
     </div>
 
@@ -601,20 +709,89 @@
           <div class="input-hint">Annual employer cost per employee × employee count</div>
         </div>
         <div class="input-field">
-          <label for="trendA">Scenario A — Status Quo Annual Trend (%)</label>
-          <input type="number" id="trendA" value="8.0" min="0" max="30" step="0.1" class="scenario-a">
-          <div class="input-hint">Worst-case projected annual HC cost growth rate</div>
+          <label for="gfShare">% of Plan Cost Charged to General Fund</label>
+          <input type="number" id="gfShare" value="100" min="0" max="100" step="1">
+          <div class="input-hint">The rest is billed to water, sewer, airport and other funds. Check the health fund's charges-for-services by fund.</div>
         </div>
         <div class="input-field">
-          <label for="trendB">Scenario B — Improved Annual Trend (%)</label>
-          <input type="number" id="trendB" value="5.0" min="0" max="30" step="0.1" class="scenario-b">
-          <div class="input-hint">Moderate improvement projected annual HC cost growth</div>
+          <label for="basis">Budget Pressure Basis</label>
+          <select id="basis">
+            <option value="full" selected>Full healthcare increase</option>
+            <option value="excess">Only growth faster than the General Fund</option>
+          </select>
+          <div class="input-hint">"Full" assumes normal revenue growth is already spoken for. "Faster than GF" assumes it covers healthcare at the GF growth rate.</div>
+        </div>
+
+        <div class="scen-hdr a">Scenario A — Status Quo</div>
+        <div class="pair">
+          <div class="input-field">
+            <label for="trendA">Trend (%/yr)</label>
+            <input type="number" id="trendA" value="8.0" min="-10" max="30" step="0.1" class="scenario-a">
+          </div>
+          <div class="input-field">
+            <label for="saveA">Yr-1 Savings (%)</label>
+            <input type="number" id="saveA" value="0" min="0" max="50" step="0.5" class="scenario-a">
+          </div>
+        </div>
+        <div class="scen-hdr b">Scenario B — Improved</div>
+        <div class="pair">
+          <div class="input-field">
+            <label for="trendB">Trend (%/yr)</label>
+            <input type="number" id="trendB" value="5.0" min="-10" max="30" step="0.1" class="scenario-b">
+          </div>
+          <div class="input-field">
+            <label for="saveB">Yr-1 Savings (%)</label>
+            <input type="number" id="saveB" value="3" min="0" max="50" step="0.5" class="scenario-b">
+          </div>
+        </div>
+        <div class="scen-hdr c">Scenario C — Target</div>
+        <div class="pair">
+          <div class="input-field">
+            <label for="trendC">Trend (%/yr)</label>
+            <input type="number" id="trendC" value="3.0" min="-10" max="30" step="0.1" class="scenario-c">
+          </div>
+          <div class="input-field">
+            <label for="saveC">Yr-1 Savings (%)</label>
+            <input type="number" id="saveC" value="6" min="0" max="50" step="0.5" class="scenario-c">
+          </div>
+        </div>
+        <div class="input-hint">Trend is annual cost growth. Yr-1 savings is a one-time reset to the cost base (pharmacy contract terms, direct contracts, plan design), then trend applies to the lower base. B and C savings are illustrative.</div>
+      </div>
+    </div>
+
+    <!-- Health Fund Liquidity -->
+    <div class="input-section">
+      <div class="input-section-hdr">
+        <span class="section-icon">🏦</span>
+        <h3>Health Fund Liquidity (optional)</h3>
+      </div>
+      <div class="input-section-body">
+        <div class="input-field">
+          <label for="hfClaims">Annual Paid Claims + Admin ($)</label>
+          <input type="number" id="hfClaims" value="2100000" min="0" step="10000">
+          <div class="input-hint">Total plan outflow from the health (internal service) fund. Leave 0 to hide this panel.</div>
         </div>
         <div class="input-field">
-          <label for="trendC">Scenario C — Target Annual Trend (%)</label>
-          <input type="number" id="trendC" value="3.0" min="0" max="30" step="0.1" class="scenario-c">
-          <div class="input-hint">Best-case / target projected annual HC cost growth</div>
+          <label for="hfCash">Health Fund Cash &amp; Investments ($)</label>
+          <input type="number" id="hfCash" value="450000" min="0" step="10000">
+          <div class="input-hint">From the ACFR internal service fund statement of net position</div>
         </div>
+        <div class="input-field">
+          <label for="hfDue">Due From Other Funds ($)</label>
+          <input type="number" id="hfDue" value="150000" min="0" step="10000">
+          <div class="input-hint">Interfund receivables. Counts as an asset, but it isn't cash that pays a claim.</div>
+        </div>
+        <div class="pair">
+          <div class="input-field">
+            <label for="hfMonths">Target (months)</label>
+            <input type="number" id="hfMonths" value="3" min="0" max="24" step="0.5">
+          </div>
+          <div class="input-field">
+            <label for="hfFixed">Or Fixed Target ($)</label>
+            <input type="number" id="hfFixed" value="0" min="0" step="100000">
+          </div>
+        </div>
+        <div class="input-hint">If policy states a dollar figure, enter it to see how many months it really covers as claims grow.</div>
       </div>
     </div>
 
@@ -701,27 +878,46 @@
     <div class="charts-grid">
       <div class="chart-card">
         <div class="chart-card-hdr">
-          <h4>① Healthcare Spend vs General Fund Budget</h4>
+          <h4>① Healthcare as a Share of the General Fund</h4>
         </div>
         <canvas id="chart1"></canvas>
       </div>
       <div class="chart-card">
         <div class="chart-card-hdr">
-          <h4>② Tax Rate &amp; Household Impact by Scenario</h4>
+          <h4>② Median Home Tax Impact by Scenario (vs Today)</h4>
         </div>
         <canvas id="chart2"></canvas>
       </div>
       <div class="chart-card">
         <div class="chart-card-hdr">
-          <h4>③ Reserve Fund Trajectory (Flat-Rate Scenario)</h4>
+          <h4>③ GF Reserve Trajectory if Tax Rate Held Flat</h4>
         </div>
         <canvas id="chart3"></canvas>
       </div>
       <div class="chart-card">
         <div class="chart-card-hdr">
-          <h4>④ Year-1 Budget Pressure Bridge</h4>
+          <h4>④ Year-1 General Fund Bridge (after normal revenue growth)</h4>
         </div>
         <canvas id="chart4"></canvas>
+      </div>
+    </div>
+
+    <hr class="sdiv">
+
+    <!-- Health Fund Liquidity -->
+    <div id="hfSection">
+      <div class="panel-title">🏦 Health Fund Liquidity — Can the Plan Pay Its Claims?</div>
+      <div class="kpi-row" id="hfRow"></div>
+      <div class="hf-note" id="hfNote"></div>
+      <hr class="sdiv">
+    </div>
+
+    <!-- Year-by-Year Table -->
+    <div class="panel-title">📋 Year-by-Year Detail — Active Scenario</div>
+    <div class="table-wrap">
+      <table class="yr-table" id="yrTable"></table>
+      <div class="table-actions">
+        <button class="btn-secondary" id="btnCsv" type="button">⬇️ Download CSV (all scenarios)</button>
       </div>
     </div>
 
@@ -734,7 +930,9 @@
       <p id="summaryText">Initializing model…</p>
       <div class="summary-actions">
         <button id="btnDownloadReport" class="btn-download-report" type="button">⬇️ Download Report</button>
-        <span class="summary-action-hint">Opens a print-friendly report for printing or saving as PDF.</span>
+        <button id="btnCopySummary" class="btn-secondary" type="button">📋 Copy Summary</button>
+        <button id="btnShare" class="btn-secondary" type="button">🔗 Copy Link to These Numbers</button>
+        <span class="summary-action-hint">Report opens print-ready for PDF. The link reopens the dashboard with every input you've entered.</span>
       </div>
       <p class="summary-disclaimer">Planning model for scenario analysis only; this dashboard is not a formal financial forecast.</p>
     </div>
@@ -743,13 +941,23 @@
 
 </div><!-- /main-layout -->
 
+<div class="toast" id="toast"></div>
+
 </div><!-- /cityBudgetDashboard -->
 
 <script>
   /* ============================================================
      DEFAULTS & PRESETS
   ============================================================ */
+  function defaultFY() {
+    /* Texas cities run Oct 1 - Sep 30. After budget adoption season
+       (Oct onward) the next budget being built is two FYs out. */
+    const d = new Date();
+    return d.getMonth() >= 9 ? d.getFullYear() + 2 : d.getFullYear() + 1;
+  }
+
   const DEFAULTS = {
+    fyStart:        defaultFY(),
     gfBudget:       25000000,
     gfGrowth:       3.0,
     reserveBalance: 5000000,
@@ -759,13 +967,21 @@
     taxRate:        0.4500,
     medianHome:     225000,
     moFunded:       100,
+    vatCap:         3.5,
     empCount:       120,
     inputMode:      'total',
     hcTotal:        1800000,
     hcPerEmployee:  15000,
-    trendA:         8.0,
-    trendB:         5.0,
-    trendC:         3.0,
+    gfShare:        100,
+    basis:          'full',
+    trendA:         8.0,  saveA: 0,
+    trendB:         5.0,  saveB: 3,
+    trendC:         3.0,  saveC: 6,
+    hfClaims:       2100000,
+    hfCash:         450000,
+    hfDue:          150000,
+    hfMonths:       3,
+    hfFixed:        0,
     fteCost:        75000,
     fteLabel:       'Police Officers',
     years:          5
@@ -774,20 +990,29 @@
   const PRESETS = {
     midsize: { ...DEFAULTS },
     conservative: {
-      gfBudget: 15000000, gfGrowth: 2.5, reserveBalance: 2250000, reservePct: 15,
+      ...DEFAULTS,
+      gfBudget: 15000000, gfGrowth: 2.5, reserveBalance: 2250000,
       taxableValue: 400000000, tvGrowth: 1.5, taxRate: 0.5200, medianHome: 175000,
-      moFunded: 100, empCount: 80, inputMode: 'total', hcTotal: 1200000,
-      hcPerEmployee: 15000, trendA: 10.0, trendB: 7.0, trendC: 5.0,
-      fteCost: 65000, fteLabel: 'Police Officers', years: 5
+      empCount: 80, hcTotal: 1200000, trendA: 10.0, trendB: 7.0, trendC: 5.0,
+      hfClaims: 1400000, hfCash: 250000, hfDue: 100000, fteCost: 65000
     },
     growing: {
-      gfBudget: 50000000, gfGrowth: 4.5, reserveBalance: 10000000, reservePct: 15,
+      ...DEFAULTS,
+      gfBudget: 50000000, gfGrowth: 4.5, reserveBalance: 10000000,
       taxableValue: 1500000000, tvGrowth: 3.5, taxRate: 0.3800, medianHome: 320000,
-      moFunded: 100, empCount: 250, inputMode: 'total', hcTotal: 3750000,
-      hcPerEmployee: 15000, trendA: 6.0, trendB: 4.0, trendC: 2.5,
-      fteCost: 85000, fteLabel: 'Police Officers', years: 5
+      empCount: 250, hcTotal: 3750000, trendA: 6.0, trendB: 4.0, trendC: 2.5,
+      hfClaims: 4400000, hfCash: 1300000, hfDue: 0, fteCost: 85000
     }
   };
+
+  /* Every input the model reads. Used for presets, reset, share links. */
+  const FIELD_IDS = ['fyStart','gfBudget','gfGrowth','reserveBalance','reservePct',
+    'taxableValue','tvGrowth','taxRate','medianHome','moFunded','vatCap',
+    'empCount','hcTotal','hcPerEmployee','gfShare','basis',
+    'trendA','saveA','trendB','saveB','trendC','saveC',
+    'hfClaims','hfCash','hfDue','hfMonths','hfFixed','fteCost','fteLabel'];
+
+  const SCEN_NAMES = { A: 'Status Quo', B: 'Improved', C: 'Target' };
 
   /* ============================================================
      STATE
@@ -800,290 +1025,495 @@
     return dashboardRoot.querySelector(`#${id}`);
   }
 
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
   /* ============================================================
      FORMATTING UTILITIES
   ============================================================ */
   const _fmtD0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
   const _fmtN1 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-  function fmtDollar(v)       { return _fmtD0.format(v); }
-  function fmtPct(v)          { return _fmtN1.format(v) + '%'; }
-  function fmtFixed(v, d)     { return v.toFixed(d); }
+  function fmtDollar(v)   { return _fmtD0.format(v); }
+  function fmtPct(v)      { return _fmtN1.format(v) + '%'; }
+  function fmtFixed(v, d) { return v.toFixed(d); }
+  function fmtRate(v)     { return (v < 0 ? '−$' : '$') + Math.abs(v).toFixed(4); }
+  function fmtSignedRate(v) { return (v >= 0 ? '+$' : '−$') + Math.abs(v).toFixed(4); }
+  function fmtSignedDollar(v) { return (v >= 0 ? '+' : '−') + fmtDollar(Math.abs(v)); }
 
   function fmtCompact(v) {
-    const a = Math.abs(v);
-    if (a >= 1e9) return '$' + (v / 1e9).toFixed(2) + 'B';
-    if (a >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
-    if (a >= 1e3) return '$' + (v / 1e3).toFixed(1) + 'K';
-    return fmtDollar(v);
+    const a = Math.abs(v), sign = v < 0 ? '−' : '';
+    if (a >= 1e9) return sign + '$' + (a / 1e9).toFixed(2) + 'B';
+    if (a >= 1e6) return sign + '$' + (a / 1e6).toFixed(2) + 'M';
+    if (a >= 1e3) return sign + '$' + (a / 1e3).toFixed(1) + 'K';
+    return sign + fmtDollar(a);
+  }
+
+  /* Fiscal-year label for projection year t (t=0 is the current/base year) */
+  function fyLabel(inputs, t) {
+    const yEnd = inputs.fyStart - 1 + t;
+    return `FY${String(yEnd - 1).slice(-2)}-${String(yEnd).slice(-2)}`;
   }
 
   /* ============================================================
      READ ALL INPUTS
+     A blank or invalid field falls back to its default. A real 0
+     is respected (the old version silently replaced 0 with the
+     default, e.g. 0% funded via M&O calculated as 100%).
   ============================================================ */
+  function num(id) {
+    const el = $id(id);
+    const v = el ? parseFloat(el.value) : NaN;
+    return Number.isFinite(v) ? v : DEFAULTS[id];
+  }
+
   function getInputs() {
     const inputMode = dashboardRoot.querySelector('input[name="inputMode"]:checked')?.value || 'total';
-    const empCount  = parseFloat($id('empCount').value) || 120;
-    const HC0 = inputMode === 'total'
-      ? (parseFloat($id('hcTotal').value) || 1800000)
-      : (parseFloat($id('hcPerEmployee').value) || 15000) * empCount;
-    const years = parseInt(dashboardRoot.querySelector('input[name="years"]:checked')?.value || '5');
+    const empCount  = Math.max(1, num('empCount'));
+    const HC0 = inputMode === 'total' ? num('hcTotal') : num('hcPerEmployee') * empCount;
+    const years = parseInt(dashboardRoot.querySelector('input[name="years"]:checked')?.value || '5', 10);
 
     return {
-      gfBudget:       parseFloat($id('gfBudget').value)       || 25000000,
-      gfGrowth:       parseFloat($id('gfGrowth').value)        || 3.0,
-      reserveBalance0:parseFloat($id('reserveBalance').value)  || 5000000,
-      reservePct:     parseFloat($id('reservePct').value)      || 15,
-      taxableValue:   parseFloat($id('taxableValue').value)    || 750000000,
-      tvGrowth:       parseFloat($id('tvGrowth').value)        || 2.0,
-      taxRate:        parseFloat($id('taxRate').value)         || 0.45,
-      medianHome:     parseFloat($id('medianHome').value)      || 225000,
-      moFunded:       parseFloat($id('moFunded').value)        || 100,
+      fyStart:        Math.round(num('fyStart')),
+      gfBudget:       Math.max(1, num('gfBudget')),
+      gfGrowth:       num('gfGrowth'),
+      reserveBalance0:num('reserveBalance'),
+      reservePct:     num('reservePct'),
+      taxableValue:   Math.max(1, num('taxableValue')),
+      tvGrowth:       num('tvGrowth'),
+      taxRate:        num('taxRate'),
+      medianHome:     num('medianHome'),
+      moFunded:       num('moFunded'),
+      vatCap:         num('vatCap'),
       empCount,
+      inputMode,
       HC0,
-      trendA:         parseFloat($id('trendA').value)          || 8.0,
-      trendB:         parseFloat($id('trendB').value)          || 5.0,
-      trendC:         parseFloat($id('trendC').value)          || 3.0,
-      fteCost:        parseFloat($id('fteCost').value)         || 75000,
-      fteLabel:       $id('fteLabel').value                   || 'Police Officers',
+      gfShare:        num('gfShare'),
+      basis:          $id('basis')?.value === 'excess' ? 'excess' : 'full',
+      trendA: num('trendA'), saveA: num('saveA'),
+      trendB: num('trendB'), saveB: num('saveB'),
+      trendC: num('trendC'), saveC: num('saveC'),
+      hfClaims:       num('hfClaims'),
+      hfCash:         num('hfCash'),
+      hfDue:          num('hfDue'),
+      hfMonths:       num('hfMonths'),
+      hfFixed:        num('hfFixed'),
+      fteCost:        Math.max(1, num('fteCost')),
+      fteLabel:       ($id('fteLabel')?.value || '').trim() || DEFAULTS.fteLabel,
       years
     };
   }
 
   /* ============================================================
      CORE CALCULATION ENGINE
-     For each year t = 1..years:
-       GF[t]             = GF0 * (1 + gfGrowth)^t
-       TV[t]             = TV0 * (1 + tvGrowth)^t
-       HC[t]             = HC0 * (1 + trend)^t
-       hcIncrease[t]     = HC[t] - HC[t-1]
-       taxRateIncrease[t]= (hcIncrease[t] * moFunded%) / (TV[t] / 100)
-       cumTaxRateInc[t]  = sum of taxRateIncrease[1..t]
-       newTaxRate[t]     = taxRate + cumTaxRateInc[t]
-       householdImpact[t]= (taxRateIncrease[t] / 100) * medianHome
-       fteEquiv[t]       = hcIncrease[t] / fteCost
-       hcPct[t]          = HC[t] / GF[t] * 100
-       reserveBalance[t] = reserveBalance[t-1] - hcIncrease[t]  (flat-rate scenario)
-       reserveFloor[t]   = GF[t] * reservePct%
+     For each year t = 1..years (year 0 = current budget):
+       GF[t]      = GF0 * (1 + g)^t                 revenue at flat rate
+       TV[t]      = TV0 * (1 + tvg)^t
+       HC[t]      = HC0 * (1 - savings) * (1 + trend)^t   total employer plan cost
+       hcGF[t]    = HC[t] * gfShare                  portion the GF pays
+       gap[t]     = full basis:   hcGF[t] - hcGF[0]
+                    excess basis: hcGF[t] - hcGF[0] * (1 + g)^t
+                    The RECURRING amount above today's base the GF must
+                    find in year t. It compounds; it does not reset.
+       rateAdd[t] = gap[t] * mo% / (TV[t] / 100)      cumulative rate add vs today
+       household[t] = rateAdd[t] / 100 * medianHome   annual bill increase vs today
+       fte[t]     = gap[t] / fteCost                  positions that money would fund
+       reserve[t] = reserve[t-1] - gap[t]             rate held flat: every year's
+                                                      gap comes out of fund balance
+       floor[t]   = GF[t] * reservePct
+     The original version subtracted only the NEW increase each
+     year, as if prior years' increases went away. They don't.
   ============================================================ */
-  function calcScenario(inputs, trend) {
+  function calcScenario(inputs, trend, savingsPct) {
     const { gfBudget, gfGrowth, taxableValue, tvGrowth, taxRate, medianHome,
-            moFunded, HC0, fteCost, reserveBalance0, reservePct, years } = inputs;
+            moFunded, HC0, fteCost, reserveBalance0, reservePct, years,
+            gfShare, basis } = inputs;
 
-    const gfG = gfGrowth  / 100;
-    const tvG = tvGrowth  / 100;
-    const tD  = trend     / 100;
-    const moD = moFunded  / 100;
+    const gfG = gfGrowth   / 100;
+    const tvG = tvGrowth   / 100;
+    const tD  = trend      / 100;
+    const sD  = Math.min(Math.max(savingsPct, 0), 100) / 100;
+    const moD = moFunded   / 100;
     const rpD = reservePct / 100;
+    const shD = Math.min(Math.max(gfShare, 0), 100) / 100;
+    const hcGF0 = HC0 * shD;
 
     const r = {
-      GF:                [gfBudget],
-      TV:                [taxableValue],
-      HC:                [HC0],
-      hcIncrease:        [0],
-      taxRateIncrease:   [0],
-      cumTaxRateIncrease:[0],
-      newTaxRate:        [taxRate],
-      householdImpact:   [0],
-      fteEquiv:          [0],
-      hcPct:             [HC0 / gfBudget * 100],
-      reserveBalance:    [reserveBalance0],
-      reserveFloor:      [gfBudget * rpD],
-      reserveAlert:      [false]
+      GF: [gfBudget], TV: [taxableValue], HC: [HC0], hcGF: [hcGF0],
+      hcIncrease: [0], gap: [0], gapIncrement: [0],
+      cumTaxRateIncrease: [0], taxRateIncrease: [0], newTaxRate: [taxRate],
+      householdImpact: [0], fteEquiv: [0],
+      hcPct: [hcGF0 / gfBudget * 100],
+      reserveBalance: [reserveBalance0], reserveFloor: [gfBudget * rpD], reserveAlert: [reserveBalance0 < gfBudget * rpD]
     };
 
     for (let t = 1; t <= years; t++) {
-      const GFt  = gfBudget     * Math.pow(1 + gfG, t);
-      const TVt  = taxableValue * Math.pow(1 + tvG, t);
-      const HCt  = HC0          * Math.pow(1 + tD,  t);
-      const hcInc       = HCt - r.HC[t - 1];
-      const taxRateInc  = (hcInc * moD) / (TVt / 100);
-      const cumTRInc    = r.cumTaxRateIncrease[t - 1] + taxRateInc;
-      const hhImpact    = (taxRateInc / 100) * medianHome;
-      const fteEq       = fteCost > 0 ? hcInc / fteCost : 0;
-      const hcPctVal    = HCt / GFt * 100;
-      const resBal      = r.reserveBalance[t - 1] - hcInc;
-      const resFloor    = GFt * rpD;
+      const GFt   = gfBudget     * Math.pow(1 + gfG, t);
+      const TVt   = taxableValue * Math.pow(1 + tvG, t);
+      const HCt   = HC0 * (1 - sD) * Math.pow(1 + tD, t);
+      const hcGFt = HCt * shD;
+      const gapT  = basis === 'excess'
+        ? hcGFt - hcGF0 * Math.pow(1 + gfG, t)
+        : hcGFt - hcGF0;
+      const cumRate  = (gapT * moD) / (TVt / 100);
+      const resBal   = r.reserveBalance[t - 1] - gapT;
+      const resFloor = GFt * rpD;
 
       r.GF.push(GFt);
       r.TV.push(TVt);
       r.HC.push(HCt);
-      r.hcIncrease.push(hcInc);
-      r.taxRateIncrease.push(taxRateInc);
-      r.cumTaxRateIncrease.push(cumTRInc);
-      r.newTaxRate.push(taxRate + cumTRInc);
-      r.householdImpact.push(hhImpact);
-      r.fteEquiv.push(fteEq);
-      r.hcPct.push(hcPctVal);
+      r.hcGF.push(hcGFt);
+      r.hcIncrease.push(HCt - r.HC[t - 1]);
+      r.gap.push(gapT);
+      r.gapIncrement.push(gapT - r.gap[t - 1]);
+      r.cumTaxRateIncrease.push(cumRate);
+      r.taxRateIncrease.push(cumRate - r.cumTaxRateIncrease[t - 1]);
+      r.newTaxRate.push(taxRate + cumRate);
+      r.householdImpact.push((cumRate / 100) * medianHome);
+      r.fteEquiv.push(gapT / fteCost);
+      r.hcPct.push(hcGFt / GFt * 100);
       r.reserveBalance.push(resBal);
       r.reserveFloor.push(resFloor);
       r.reserveAlert.push(resBal < resFloor);
     }
+
+    /* First year the reserve falls below policy (null if never) */
+    r.firstBreachYear = null;
+    for (let t = 1; t <= years; t++) {
+      if (r.reserveAlert[t]) { r.firstBreachYear = t; break; }
+    }
+    /* Cumulative GF dollars drawn from reserves over the horizon */
+    r.cumGap = r.gap.slice(1).reduce((a, b) => a + b, 0);
     return r;
+  }
+
+  /* Voter-approval check: rate increase as % of current M&O rate.
+     Simplification: ignores value changes (the no-new-revenue rate
+     moves with appraisals). Good for a flag, not for the ordinance. */
+  function vatCheck(inputs, sc) {
+    if (!(inputs.taxRate > 0)) return { pct: 0, over: false };
+    const pct = sc.cumTaxRateIncrease[1] / inputs.taxRate * 100;
+    return { pct, over: pct > inputs.vatCap };
+  }
+
+  /* Health fund liquidity for a scenario */
+  function calcHealthFund(inputs, trend, savingsPct) {
+    const claims0 = inputs.hfClaims;
+    if (!(claims0 > 0)) return null;
+    const monthly0 = claims0 / 12;
+    const N = inputs.years;
+    const sD = Math.min(Math.max(savingsPct, 0), 100) / 100;
+    const claimsN = claims0 * (1 - sD) * Math.pow(1 + trend / 100, N);
+    const targetDollars = monthly0 * inputs.hfMonths;
+    return {
+      claims0, monthly0, claimsN,
+      monthsCash:  inputs.hfCash / monthly0,
+      monthsTotal: (inputs.hfCash + inputs.hfDue) / monthly0,
+      dueShare:    (inputs.hfCash + inputs.hfDue) > 0 ? inputs.hfDue / (inputs.hfCash + inputs.hfDue) * 100 : 0,
+      targetDollars,
+      cashShortfall: targetDollars - inputs.hfCash,
+      fixedMonths0: inputs.hfFixed > 0 ? inputs.hfFixed / monthly0 : null,
+      fixedMonthsN: inputs.hfFixed > 0 ? inputs.hfFixed / (claimsN / 12) : null,
+      targetN: (claimsN / 12) * inputs.hfMonths
+    };
   }
 
   /* ============================================================
      KPI TILES
   ============================================================ */
-  function renderKPIs(inputs, active) {
-    const N  = inputs.years;
-    const hcPct1    = active.hcPct[1];
-    const hcPctN    = active.hcPct[N];
-    const hcInc1    = active.hcIncrease[1];
-    const taxInc1   = active.taxRateIncrease[1];
-    const newTR1    = active.newTaxRate[1];
-    const hhImp1    = active.householdImpact[1];
-    const fte1      = active.fteEquiv[1];
-    const resBal1   = active.reserveBalance[1];
-    const resFloor1 = active.reserveFloor[1];
-
-    /* Color logic per spec */
-    const hcPctColor  = hcPct1 < 8 ? 'green' : hcPct1 <= 12 ? 'amber' : 'red';
-    const hcIncPctGF  = hcInc1 / inputs.gfBudget * 100;
-    const hcIncColor  = hcIncPctGF < 2 ? 'green' : hcIncPctGF <= 5 ? 'amber' : 'red';
-    const taxColor    = taxInc1 < 0.01 ? 'green' : taxInc1 <= 0.05 ? 'amber' : 'red';
-    const hhColor     = hhImp1 < 50 ? 'green' : hhImp1 <= 150 ? 'amber' : 'red';
-    const fteColor    = fte1 < 1 ? 'green' : fte1 <= 3 ? 'amber' : 'red';
-    const resColor    = resBal1 > resFloor1 * 1.1 ? 'green' : resBal1 >= resFloor1 ? 'amber' : 'red';
-    const resStatus   = resBal1 > resFloor1 * 1.1 ? 'Above Policy Floor ✓'
-                      : resBal1 >= resFloor1       ? 'Near Policy Floor ⚠'
-                      :                              'Below Policy Floor ✗';
-
-    const tiles = [
-      {
-        label: 'HC % of General Fund',
-        value: fmtPct(hcPct1),
-        sub:   `Now ${fmtPct(active.hcPct[0])} → ${fmtPct(hcPctN)} in Yr ${N}`,
-        color: hcPctColor
-      },
-      {
-        label: 'Next-Year HC Increase',
-        value: fmtDollar(hcInc1),
-        sub:   `Over prior year spend of ${fmtDollar(inputs.HC0)}`,
-        color: hcIncColor
-      },
-      {
-        label: 'Tax Rate Impact',
-        value: `+$${fmtFixed(taxInc1, 4)}`,
-        sub:   `New rate: $${fmtFixed(newTR1, 4)} per $100`,
-        color: taxColor
-      },
-      {
-        label: 'Household Impact',
-        value: `$${Math.round(hhImp1)}/yr`,
-        sub:   `Based on ${fmtDollar(inputs.medianHome)} median home`,
-        color: hhColor
-      },
-      {
-        label: 'Service Tradeoff',
-        value: `${fte1.toFixed(1)} FTE`,
-        sub:   `${fte1.toFixed(1)} ${inputs.fteLabel} @ ${fmtDollar(inputs.fteCost)}`,
-        color: fteColor
-      },
-      {
-        label: 'Reserve vs Policy',
-        value: fmtCompact(resBal1),
-        sub:   `Floor: ${fmtDollar(resFloor1)} | ${resStatus}`,
-        color: resColor
-      }
-    ];
-
-    $id('kpiRow').innerHTML = tiles.map(t => `
+  function tileHtml(t) {
+    return `
       <div class="kpi-tile ${t.color}">
         <div class="kpi-label">${t.label}</div>
         <div class="kpi-value">${t.value}</div>
         <div class="kpi-sub">${t.sub}</div>
-      </div>`).join('');
+      </div>`;
+  }
+
+  function renderKPIs(inputs, active, scA) {
+    const N         = inputs.years;
+    const hcPct1    = active.hcPct[1];
+    const gap1      = active.gap[1];
+    const rate1     = active.cumTaxRateIncrease[1];
+    const hh1       = active.householdImpact[1];
+    const fte1      = active.fteEquiv[1];
+    const resBalN   = active.reserveBalance[N];
+    const resFloorN = active.reserveFloor[N];
+    const vat       = vatCheck(inputs, active);
+    const saved     = scA.HC.slice(1).reduce((a, b) => a + b, 0) - active.HC.slice(1).reduce((a, b) => a + b, 0);
+    const savedGF   = saved * inputs.gfShare / 100;
+
+    const gapPctGF  = gap1 / inputs.gfBudget * 100;
+    const tiles = [
+      {
+        label: 'HC % of General Fund',
+        value: fmtPct(hcPct1),
+        sub:   `Now ${fmtPct(active.hcPct[0])} → ${fmtPct(active.hcPct[N])} in ${fyLabel(inputs, N)}`,
+        color: hcPct1 < 8 ? 'green' : hcPct1 <= 12 ? 'amber' : 'red'
+      },
+      {
+        label: `${fyLabel(inputs, 1)} GF Pressure`,
+        value: fmtSignedDollar(gap1),
+        sub:   `Healthcare cost the GF must fund above today (${inputs.basis === 'full' ? 'full increase' : 'growth above GF'})`,
+        color: gapPctGF < 0.5 ? 'green' : gapPctGF <= 2 ? 'amber' : 'red'
+      },
+      {
+        label: 'Tax Rate Impact',
+        value: fmtSignedRate(rate1),
+        sub:   `New rate: ${fmtRate(active.newTaxRate[1])} per $100 (${fmtPct(inputs.moFunded)} via M&amp;O)`,
+        color: rate1 < 0.01 ? 'green' : rate1 <= 0.05 ? 'amber' : 'red'
+      },
+      {
+        label: 'Voter-Approval Check',
+        value: vat.over ? 'Over Cap' : 'Under Cap',
+        sub:   `${fmtPct(vat.pct)} M&amp;O rate increase vs ${fmtPct(inputs.vatCap)} cap (approximate)`,
+        color: vat.over ? 'red' : vat.pct > inputs.vatCap * 0.6 ? 'amber' : 'green'
+      },
+      {
+        label: 'Household Impact',
+        value: `${hh1 < 0 ? '−' : ''}$${Math.abs(Math.round(hh1))}/yr`,
+        sub:   `${fmtDollar(inputs.medianHome)} median home · $${Math.round(active.householdImpact[N])}/yr by ${fyLabel(inputs, N)}`,
+        color: hh1 < 50 ? 'green' : hh1 <= 150 ? 'amber' : 'red'
+      },
+      {
+        label: 'Service Tradeoff',
+        value: `${fte1.toFixed(1)} FTE`,
+        sub:   `${esc(inputs.fteLabel)} @ ${fmtDollar(inputs.fteCost)} · ${active.fteEquiv[N].toFixed(1)} by ${fyLabel(inputs, N)}`,
+        color: fte1 < 1 ? 'green' : fte1 <= 3 ? 'amber' : 'red'
+      },
+      {
+        label: `GF Reserve, End ${fyLabel(inputs, N)}`,
+        value: fmtCompact(resBalN),
+        sub:   active.firstBreachYear
+                 ? `Below ${fmtPct(inputs.reservePct)} policy in ${fyLabel(inputs, active.firstBreachYear)} if rate held flat`
+                 : `Floor ${fmtCompact(resFloorN)} · stays above policy if rate held flat`,
+        color: active.firstBreachYear ? 'red' : resBalN < resFloorN * 1.1 ? 'amber' : 'green'
+      },
+      {
+        label: `${N}-Yr Savings vs Status Quo`,
+        value: activeScenario === 'A' ? '—' : fmtCompact(saved),
+        sub:   activeScenario === 'A'
+                 ? 'Select Scenario B or C to compare'
+                 : `Total plan cost · ${fmtCompact(savedGF)} of it General Fund`,
+        color: activeScenario === 'A' ? 'amber' : saved > 0 ? 'green' : 'red'
+      }
+    ];
+
+    $id('kpiRow').innerHTML = tiles.map(tileHtml).join('');
+    return { saved, savedGF, vat };
+  }
+
+  /* ============================================================
+     HEALTH FUND PANEL
+  ============================================================ */
+  function renderHealthFund(inputs, hf, trend) {
+    const sec = $id('hfSection');
+    if (!hf) { sec.style.display = 'none'; return; }
+    sec.style.display = '';
+    const N = inputs.years;
+    const tgt = inputs.hfMonths;
+
+    const tiles = [
+      {
+        label: 'Cash on Hand',
+        value: `${hf.monthsCash.toFixed(1)} mo`,
+        sub:   `${fmtCompact(inputs.hfCash)} vs ${fmtCompact(hf.monthly0)}/mo in claims`,
+        color: hf.monthsCash >= tgt ? 'green' : hf.monthsCash >= tgt * 0.67 ? 'amber' : 'red'
+      },
+      {
+        label: 'Incl. Due From Other Funds',
+        value: `${hf.monthsTotal.toFixed(1)} mo`,
+        sub:   `${fmtPct(hf.dueShare)} of the fund's liquid-looking assets is an IOU`,
+        color: hf.dueShare < 10 ? 'green' : hf.dueShare <= 30 ? 'amber' : 'red'
+      },
+      {
+        label: `${tgt}-Month Target`,
+        value: fmtCompact(hf.targetDollars),
+        sub:   hf.cashShortfall > 0
+                 ? `Cash is ${fmtCompact(hf.cashShortfall)} short · target grows to ${fmtCompact(hf.targetN)} by ${fyLabel(inputs, N)}`
+                 : `Cash covers it · target grows to ${fmtCompact(hf.targetN)} by ${fyLabel(inputs, N)}`,
+        color: hf.cashShortfall > 0 ? 'red' : 'green'
+      }
+    ];
+    if (hf.fixedMonths0 !== null) {
+      tiles.push({
+        label: `Fixed ${fmtCompact(inputs.hfFixed)} Target`,
+        value: `${hf.fixedMonths0.toFixed(1)} → ${hf.fixedMonthsN.toFixed(1)} mo`,
+        sub:   `Months of claims it covers today vs ${fyLabel(inputs, N)} at ${fmtPct(trend)} trend`,
+        color: hf.fixedMonthsN >= tgt ? 'green' : hf.fixedMonthsN >= tgt * 0.67 ? 'amber' : 'red'
+      });
+    }
+    $id('hfRow').innerHTML = tiles.map(tileHtml).join('');
+
+    let note = `The health fund pays roughly <strong>${fmtDollar(hf.monthly0)}</strong> in claims and fees every month. ` +
+      `It holds <strong>${hf.monthsCash.toFixed(1)} months</strong> of that in cash` +
+      (inputs.hfDue > 0
+        ? `, plus <strong>${fmtDollar(inputs.hfDue)}</strong> owed to it by other City funds. A receivable does not pay a hospital bill until the other fund actually transfers cash.`
+        : '.');
+    if (hf.fixedMonths0 !== null) {
+      note += ` A fixed <strong>${fmtDollar(inputs.hfFixed)}</strong> reserve target covers ${hf.fixedMonths0.toFixed(1)} months today and only <strong>${hf.fixedMonthsN.toFixed(1)} months</strong> by ${fyLabel(inputs, N)}. Stating the policy in months keeps it honest as the plan grows.`;
+    }
+    $id('hfNote').innerHTML = note;
+  }
+
+  /* ============================================================
+     YEAR-BY-YEAR TABLE
+  ============================================================ */
+  function renderTable(inputs, sc) {
+    const N = inputs.years;
+    let html = `<tr><th>Fiscal Year</th><th>Total Plan Cost</th><th>GF Share</th><th>HC % of GF</th>
+      <th>GF Pressure vs Today</th><th>Rate Add / $100</th><th>Median Home $/yr</th>
+      <th>${esc(inputs.fteLabel)}</th><th>GF Reserve (flat rate)</th><th>Policy Floor</th></tr>`;
+    for (let t = 0; t <= N; t++) {
+      html += `<tr>
+        <td>${fyLabel(inputs, t)}${t === 0 ? ' (base)' : ''}</td>
+        <td>${fmtDollar(sc.HC[t])}</td>
+        <td>${fmtDollar(sc.hcGF[t])}</td>
+        <td>${fmtPct(sc.hcPct[t])}</td>
+        <td>${t === 0 ? '—' : fmtSignedDollar(sc.gap[t])}</td>
+        <td>${t === 0 ? '—' : fmtSignedRate(sc.cumTaxRateIncrease[t])}</td>
+        <td>${t === 0 ? '—' : '$' + Math.round(sc.householdImpact[t])}</td>
+        <td>${t === 0 ? '—' : sc.fteEquiv[t].toFixed(1)}</td>
+        <td class="${sc.reserveAlert[t] ? 'neg' : ''}">${fmtDollar(sc.reserveBalance[t])}</td>
+        <td>${fmtDollar(sc.reserveFloor[t])}</td>
+      </tr>`;
+    }
+    $id('yrTable').innerHTML = html;
+  }
+
+  function downloadCsv() {
+    const inputs = getInputs();
+    const scs = {
+      A: calcScenario(inputs, inputs.trendA, inputs.saveA),
+      B: calcScenario(inputs, inputs.trendB, inputs.saveB),
+      C: calcScenario(inputs, inputs.trendC, inputs.saveC)
+    };
+    const rows = [['Scenario','Fiscal Year','Total Plan Cost','GF Share of Plan Cost','HC % of GF',
+      'GF Pressure vs Base','Cumulative Rate Add per $100','Median Home Impact $/yr',
+      'FTE Equivalent','GF Reserve (rate held flat)','Reserve Policy Floor']];
+    ['A','B','C'].forEach(k => {
+      const sc = scs[k];
+      for (let t = 0; t <= inputs.years; t++) {
+        rows.push([`${k} - ${SCEN_NAMES[k]}`, fyLabel(inputs, t), sc.HC[t].toFixed(0), sc.hcGF[t].toFixed(0),
+          sc.hcPct[t].toFixed(2), sc.gap[t].toFixed(0), sc.cumTaxRateIncrease[t].toFixed(5),
+          sc.householdImpact[t].toFixed(2), sc.fteEquiv[t].toFixed(2),
+          sc.reserveBalance[t].toFixed(0), sc.reserveFloor[t].toFixed(0)]);
+      }
+    });
+    const csv = rows.map(r => r.map(v => /[",\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : v).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'healthcare-budget-projection.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
   /* ============================================================
      READ-ALOUD SUMMARY
   ============================================================ */
-  function renderSummary(inputs, active, scenName, trendPct) {
-    const N          = inputs.years;
-    const nextFY     = new Date().getFullYear() + 1;
-    const hcInc1     = active.hcIncrease[1];
-    const hcPct1     = active.hcPct[1];
-    const taxInc1    = active.taxRateIncrease[1];
-    const hhImp1     = active.householdImpact[1];
-    const fte1       = active.fteEquiv[1];
-    const resBal1    = active.reserveBalance[1];
-    const resFloor1  = active.reserveFloor[1];
-    const resPos     = resBal1 > resFloor1 * 1.1 ? 'well above'
-                     : resBal1 >= resFloor1       ? 'approaching'
-                     :                              'below';
+  function renderSummary(inputs, active, trendPct, savingsPct, extra, hf) {
+    const N    = inputs.years;
+    const fy1  = fyLabel(inputs, 1);
+    const fyN  = fyLabel(inputs, N);
+    const gap1 = active.gap[1];
+    const s = [];
 
-    $id('summaryText').innerHTML =
-      `Under <strong>Scenario ${activeScenario} (${scenName})</strong>, the City faces a ` +
-      `<strong>${trendPct.toFixed(1)}%</strong> annual healthcare cost increase. ` +
-      `In <strong>FY${nextFY}</strong>, employer healthcare costs are projected to grow by ` +
-      `<strong>${fmtDollar(hcInc1)}</strong>, representing ` +
-      `<strong>${hcPct1.toFixed(1)}%</strong> of the General Fund. ` +
-      `To cover this increase through the M&amp;O tax rate, the rate would need to increase by ` +
-      `<strong>$${fmtFixed(taxInc1, 4)} per $100 valuation</strong> — adding approximately ` +
-      `<strong>$${Math.round(hhImp1)} per year</strong> to the tax bill for a median-value home. ` +
-      `This is equivalent to <strong>${fte1.toFixed(1)} ${inputs.fteLabel}</strong> positions. ` +
-      `If the tax rate is held flat, the City's unassigned fund balance would draw to ` +
-      `<strong>${fmtDollar(resBal1)}</strong> by end of Year 1 — ` +
-      `<strong>${resPos}</strong> the ${inputs.reservePct}% reserve policy floor of ` +
-      `<strong>${fmtDollar(resFloor1)}</strong>. ` +
-      `Over a <strong>${N}-year</strong> planning window, this model helps decision-makers compare short-term affordability with long-term budget resilience under each healthcare trend assumption.`;
+    s.push(`Under <strong>Scenario ${activeScenario} (${SCEN_NAMES[activeScenario]})</strong>, ` +
+      (savingsPct > 0 ? `the plan resets its cost base down <strong>${fmtPct(savingsPct)}</strong> and then grows ` : `employee healthcare costs grow `) +
+      `<strong>${fmtPct(trendPct)}</strong> a year.`);
+
+    s.push(`In <strong>${fy1}</strong>, the General Fund's share of the plan is <strong>${fmtDollar(active.hcGF[1])}</strong>, ` +
+      `<strong>${fmtPct(active.hcPct[1])}</strong> of the General Fund. That is ` +
+      (gap1 >= 0 ? `<strong>${fmtDollar(gap1)}</strong> more than today` : `<strong>${fmtDollar(-gap1)}</strong> less than today`) +
+      (inputs.basis === 'excess' ? `, after normal ${fmtPct(inputs.gfGrowth)} revenue growth absorbs its share.` : '.'));
+
+    if (gap1 > 0) {
+      s.push(`Funding ${inputs.moFunded >= 100 ? 'that' : fmtPct(inputs.moFunded) + ' of that'} with the M&amp;O rate takes ` +
+        `<strong>${fmtSignedRate(active.cumTaxRateIncrease[1])} per $100</strong>, about <strong>$${Math.round(active.householdImpact[1])} a year</strong> on a median home, ` +
+        `${extra.vat.over ? `which is <strong>above</strong> the ${fmtPct(inputs.vatCap)} voter-approval threshold` : `within the ${fmtPct(inputs.vatCap)} voter-approval threshold`}. ` +
+        `The same money would fund <strong>${active.fteEquiv[1].toFixed(1)} ${esc(inputs.fteLabel)}</strong>.`);
+    }
+
+    s.push(`By <strong>${fyN}</strong>, the annual gap reaches <strong>${fmtDollar(Math.max(0, active.gap[N]))}</strong>. ` +
+      `If the tax rate is held flat and reserves cover it, the General Fund balance goes from ${fmtDollar(active.reserveBalance[0])} to ` +
+      `<strong>${fmtDollar(active.reserveBalance[N])}</strong>` +
+      (active.firstBreachYear
+        ? `, falling below the ${fmtPct(inputs.reservePct)} reserve policy in <strong>${fyLabel(inputs, active.firstBreachYear)}</strong>.`
+        : `, staying above the ${fmtPct(inputs.reservePct)} reserve policy.`) +
+      ` Healthcare cost increases recur every year; reserves can bridge one, not fund all of them.`);
+
+    if (activeScenario !== 'A' && extra.saved > 0) {
+      s.push(`Compared with the status quo, this scenario saves <strong>${fmtDollar(extra.saved)}</strong> in plan costs over ${N} years, ` +
+        `<strong>${fmtDollar(extra.savedGF)}</strong> of it in the General Fund.`);
+    }
+
+    if (hf) {
+      s.push(`The health fund itself holds <strong>${hf.monthsCash.toFixed(1)} months</strong> of claims in cash against a ${inputs.hfMonths}-month target` +
+        (inputs.hfDue > 0 ? `, with another ${fmtDollar(inputs.hfDue)} owed to it by other funds.` : '.'));
+    }
+
+    $id('summaryText').innerHTML = s.join(' ');
   }
 
   function buildPrintableReportHtml() {
     if (!lastReportState) return '';
 
-    const { inputs, activeSc, scenarioKey, scenarioName, activeTrend } = lastReportState;
-    const nextFY = new Date().getFullYear() + 1;
+    const { inputs, activeSc, scenarioKey, scenarioName, activeTrend, activeSave, extra, hf } = lastReportState;
     const N = inputs.years;
-    const inputMode = dashboardRoot.querySelector('input[name="inputMode"]:checked')?.value || 'total';
-    const inputModeLabel = inputMode === 'total' ? 'Total Employer Spend' : 'Per-Employee Annual';
     const summaryText = ($id('summaryText')?.innerText || '').trim();
-    const yr1 = {
-      hcIncrease: activeSc.hcIncrease[1],
-      taxInc: activeSc.taxRateIncrease[1],
-      hhImpact: activeSc.householdImpact[1],
-      fte: activeSc.fteEquiv[1],
-      reserve: activeSc.reserveBalance[1],
-      reserveFloor: activeSc.reserveFloor[1]
-    };
-    const yrN = {
-      hcPct: activeSc.hcPct[N],
-      cumTaxRateInc: activeSc.cumTaxRateIncrease[N],
-      reserve: activeSc.reserveBalance[N],
-      reserveFloor: activeSc.reserveFloor[N]
-    };
+    const tableHtml = $id('yrTable')?.outerHTML || '';
 
     const assumptions = [
-      { label: 'General Fund Budget', value: fmtDollar(inputs.gfBudget) },
-      { label: 'General Fund Growth', value: fmtPct(inputs.gfGrowth) },
-      { label: 'Beginning Reserve Balance', value: fmtDollar(inputs.reserveBalance0) },
-      { label: 'Reserve Policy Target', value: fmtPct(inputs.reservePct) },
-      { label: 'Total Taxable Value', value: fmtDollar(inputs.taxableValue) },
-      { label: 'Taxable Value Growth', value: fmtPct(inputs.tvGrowth) },
-      { label: 'Current M&O Tax Rate', value: `$${fmtFixed(inputs.taxRate, 4)} per $100` },
-      { label: 'Median Taxable Home Value', value: fmtDollar(inputs.medianHome) },
-      { label: 'Portion Funded Through M&O', value: fmtPct(inputs.moFunded) },
-      { label: 'Benefit-Eligible Employee Count', value: Math.round(inputs.empCount).toLocaleString() },
-      { label: 'Healthcare Input Mode', value: inputModeLabel },
-      { label: 'Baseline Employer Healthcare Spend', value: fmtDollar(inputs.HC0) },
-      { label: 'Scenario A Trend', value: fmtPct(inputs.trendA) },
-      { label: 'Scenario B Trend', value: fmtPct(inputs.trendB) },
-      { label: 'Scenario C Trend', value: fmtPct(inputs.trendC) },
-      { label: 'Service Unit Cost', value: `${fmtDollar(inputs.fteCost)} per ${inputs.fteLabel}` },
-      { label: 'Projection Horizon', value: `${N} years` }
+      ['First Projected Fiscal Year', fyLabel(inputs, 1)],
+      ['General Fund Budget', fmtDollar(inputs.gfBudget)],
+      ['General Fund Growth (flat rate)', fmtPct(inputs.gfGrowth)],
+      ['Beginning Unassigned Fund Balance', fmtDollar(inputs.reserveBalance0)],
+      ['Reserve Policy Target', fmtPct(inputs.reservePct) + ' of GF'],
+      ['Total Taxable Value', fmtDollar(inputs.taxableValue)],
+      ['Taxable Value Growth', fmtPct(inputs.tvGrowth)],
+      ['Current M&O Tax Rate', `${fmtRate(inputs.taxRate)} per $100`],
+      ['Median Taxable Home Value', fmtDollar(inputs.medianHome)],
+      ['Portion Funded Through M&O', fmtPct(inputs.moFunded)],
+      ['Voter-Approval Cap Used', fmtPct(inputs.vatCap)],
+      ['Benefit-Eligible Employees', Math.round(inputs.empCount).toLocaleString()],
+      ['Baseline Employer Healthcare Spend', fmtDollar(inputs.HC0)],
+      ['Share Charged to General Fund', fmtPct(inputs.gfShare)],
+      ['Pressure Basis', inputs.basis === 'full' ? 'Full healthcare increase' : 'Growth above GF growth'],
+      ['Scenario A', `${fmtPct(inputs.trendA)} trend, ${fmtPct(inputs.saveA)} yr-1 savings`],
+      ['Scenario B', `${fmtPct(inputs.trendB)} trend, ${fmtPct(inputs.saveB)} yr-1 savings`],
+      ['Scenario C', `${fmtPct(inputs.trendC)} trend, ${fmtPct(inputs.saveC)} yr-1 savings`],
+      ['Service Unit Cost', `${fmtDollar(inputs.fteCost)} per ${esc(inputs.fteLabel)}`],
+      ['Projection Horizon', `${N} years`]
     ];
+    if (hf) {
+      assumptions.push(['Health Fund Annual Claims + Admin', fmtDollar(inputs.hfClaims)]);
+      assumptions.push(['Health Fund Cash & Investments', fmtDollar(inputs.hfCash)]);
+      assumptions.push(['Due From Other Funds', fmtDollar(inputs.hfDue)]);
+      assumptions.push(['Health Fund Target', `${inputs.hfMonths} months` + (inputs.hfFixed > 0 ? ` (fixed $ policy: ${fmtDollar(inputs.hfFixed)})` : '')]);
+    }
+    const assumptionsRows = assumptions.map(([l, v]) => `<tr><td>${l}</td><td>${v}</td></tr>`).join('');
 
-    const assumptionsRows = assumptions.map(item =>
-      `<tr><td>${item.label}</td><td>${item.value}</td></tr>`
-    ).join('');
+    const hfBlock = hf ? `
+  <h2>Health Fund Liquidity</h2>
+  <table>
+    <tr><th>Measure</th><th>Value</th></tr>
+    <tr><td>Monthly claims + admin</td><td>${fmtDollar(hf.monthly0)}</td></tr>
+    <tr><td>Months of claims in cash</td><td>${hf.monthsCash.toFixed(1)}</td></tr>
+    <tr><td>Months including due from other funds</td><td>${hf.monthsTotal.toFixed(1)}</td></tr>
+    <tr><td>${inputs.hfMonths}-month target today</td><td>${fmtDollar(hf.targetDollars)}</td></tr>
+    <tr><td>${inputs.hfMonths}-month target in ${fyLabel(inputs, N)}</td><td>${fmtDollar(hf.targetN)}</td></tr>
+    ${hf.fixedMonths0 !== null ? `<tr><td>Fixed ${fmtDollar(inputs.hfFixed)} target, months covered today / ${fyLabel(inputs, N)}</td><td>${hf.fixedMonths0.toFixed(1)} / ${hf.fixedMonthsN.toFixed(1)}</td></tr>` : ''}
+  </table>` : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>City Budget Healthcare Impact Report</title>
+  <title>Healthcare Budget Impact Report</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; color: #111; margin: 28px; line-height: 1.45; }
     h1 { margin: 0 0 6px; font-size: 24px; }
@@ -1094,60 +1524,44 @@
     .kpi .label { color: #555; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
     .kpi .value { font-size: 20px; font-weight: 700; margin-top: 2px; }
     table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 12px; color: #111; background: #fff; }
     th { background: #f6f8fa; }
+    td.neg { color: #b42318; font-weight: 700; }
     .small { color: #666; font-size: 12px; margin-top: 10px; }
-    @media print { body { margin: 16mm; } }
+    @media print { body { margin: 12mm; } h2 { break-after: avoid; } table { break-inside: auto; } }
   </style>
 </head>
 <body>
-  <h1>City Budget Healthcare Impact Report</h1>
+  <h1>Healthcare Budget Impact Report</h1>
   <div class="meta">
     Generated ${new Date().toLocaleString()}<br>
-    Scenario ${scenarioKey} (${scenarioName}) • ${activeTrend.toFixed(1)}% healthcare trend • ${N}-year horizon
+    Scenario ${scenarioKey} (${scenarioName}) · ${fmtPct(activeTrend)} trend${activeSave > 0 ? ` after ${fmtPct(activeSave)} year-1 savings` : ''} · ${N}-year horizon
   </div>
 
-  <h2>Year 1 Snapshot (FY${nextFY})</h2>
+  <h2>${fyLabel(inputs, 1)} Snapshot</h2>
   <div class="kpis">
-    <div class="kpi"><div class="label">Healthcare Increase</div><div class="value">${fmtDollar(yr1.hcIncrease)}</div></div>
-    <div class="kpi"><div class="label">Tax Rate Increase Needed</div><div class="value">$${fmtFixed(yr1.taxInc, 4)} / $100</div></div>
-    <div class="kpi"><div class="label">Median Home Impact</div><div class="value">$${Math.round(yr1.hhImpact)} / year</div></div>
-    <div class="kpi"><div class="label">Service Equivalent</div><div class="value">${yr1.fte.toFixed(1)} ${inputs.fteLabel}</div></div>
+    <div class="kpi"><div class="label">General Fund Pressure</div><div class="value">${fmtSignedDollar(activeSc.gap[1])}</div></div>
+    <div class="kpi"><div class="label">Tax Rate Change Needed</div><div class="value">${fmtSignedRate(activeSc.cumTaxRateIncrease[1])} / $100</div></div>
+    <div class="kpi"><div class="label">Median Home Impact</div><div class="value">$${Math.round(activeSc.householdImpact[1])} / year</div></div>
+    <div class="kpi"><div class="label">Voter-Approval Check</div><div class="value">${extra.vat.over ? 'Over' : 'Under'} ${fmtPct(inputs.vatCap)} cap</div></div>
+    <div class="kpi"><div class="label">Service Equivalent</div><div class="value">${activeSc.fteEquiv[1].toFixed(1)} ${esc(inputs.fteLabel)}</div></div>
+    <div class="kpi"><div class="label">${N}-Year Savings vs Status Quo</div><div class="value">${scenarioKey === 'A' ? 'n/a' : fmtDollar(extra.saved)}</div></div>
   </div>
 
-  <h2>Reserve Position</h2>
-  <table>
-    <tr><th>Period</th><th>Reserve Balance</th><th>Policy Floor</th><th>Status</th></tr>
-    <tr>
-      <td>End of Year 1</td>
-      <td>${fmtDollar(yr1.reserve)}</td>
-      <td>${fmtDollar(yr1.reserveFloor)}</td>
-      <td>${yr1.reserve >= yr1.reserveFloor ? 'At/Above Floor' : 'Below Floor'}</td>
-    </tr>
-    <tr>
-      <td>End of Year ${N}</td>
-      <td>${fmtDollar(yrN.reserve)}</td>
-      <td>${fmtDollar(yrN.reserveFloor)}</td>
-      <td>${yrN.reserve >= yrN.reserveFloor ? 'At/Above Floor' : 'Below Floor'}</td>
-    </tr>
-  </table>
+  <h2>Year-by-Year Projection</h2>
+  ${tableHtml}
+  ${hfBlock}
 
-  <h2>Multi-Year Perspective</h2>
-  <table>
-    <tr><th>Metric</th><th>Value</th></tr>
-    <tr><td>Healthcare as % of General Fund in Year ${N}</td><td>${fmtPct(yrN.hcPct)}</td></tr>
-    <tr><td>Cumulative tax rate increase by Year ${N}</td><td>$${fmtFixed(yrN.cumTaxRateInc, 4)} per $100</td></tr>
-  </table>
+  <h2>Executive Summary</h2>
+  <p>${esc(summaryText)}</p>
 
-  <h2>Current Input Assumptions</h2>
+  <h2>Input Assumptions</h2>
   <table>
     <tr><th>Input</th><th>Value</th></tr>
     ${assumptionsRows}
   </table>
 
-  <h2>Executive Summary</h2>
-  <p>${summaryText}</p>
-  <p class="small">Note: This report reflects current on-screen inputs and assumptions at the time generated. It is a planning model for scenario analysis and is not a formal financial forecast.</p>
+  <p class="small">This report reflects the inputs on screen when generated. It is a planning model for scenario analysis, not a formal financial forecast. The voter-approval check compares the rate increase to the current M&amp;O rate and ignores appraisal changes; confirm against the Truth-in-Taxation worksheet.</p>
 </body>
 </html>`;
   }
@@ -1176,15 +1590,11 @@
      SCENARIO STRIP
   ============================================================ */
   function updateScenarioStrip(inputs) {
-    const yr1a = inputs.HC0 * (1 + inputs.trendA / 100);
-    const yr1b = inputs.HC0 * (1 + inputs.trendB / 100);
-    const yr1c = inputs.HC0 * (1 + inputs.trendC / 100);
-    $id('siA').textContent =
-      `${inputs.trendA.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1a)}`;
-    $id('siB').textContent =
-      `${inputs.trendB.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1b)}`;
-    $id('siC').textContent =
-      `${inputs.trendC.toFixed(1)}% trend — Yr1 HC: ${fmtCompact(yr1c)}`;
+    [['A', 'siA'], ['B', 'siB'], ['C', 'siC']].forEach(([k, id]) => {
+      const tr = inputs['trend' + k], sv = inputs['save' + k];
+      const yr1 = inputs.HC0 * (1 - sv / 100) * (1 + tr / 100);
+      $id(id).textContent = `${tr.toFixed(1)}% trend${sv > 0 ? `, −${sv}% reset` : ''} — ${fyLabel(inputs, 1)} plan cost ${fmtCompact(yr1)}`;
+    });
   }
 
   /* ============================================================
@@ -1247,6 +1657,20 @@
     return Math.ceil(val / mag) * mag;
   }
 
+  /* Round axis bounds to clean steps (1, 2, 2.5, 5 x 10^n) so ticks read
+     $50 / $100 / $150 instead of $44 / $108 / $172. */
+  function niceScale(lo, hi, count) {
+    if (lo === hi) { hi = lo + 1; }
+    const raw = (hi - lo) / count;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || 10 * mag;
+    const min = Math.floor(lo / step) * step;
+    const max = Math.ceil(hi / step) * step;
+    const ticks = [];
+    for (let v = min; v <= max + step / 2; v += step) ticks.push(Math.abs(v) < step / 1e6 ? 0 : v);
+    return { min, max, ticks };
+  }
+
   /* Generate evenly-spaced tick values */
   function makeTicks(min, max, count) {
     const step = (max - min) / count;
@@ -1281,7 +1705,7 @@
 
     /* Y axis labels */
     ctx.fillStyle = C.text;
-    ctx.font = '10px monospace';
+    ctx.font = '11px monospace';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     yTicks.forEach(tick => {
@@ -1325,7 +1749,7 @@
   /* Draw inline legend at (startX, y) */
   function drawLegend(ctx, items, startX, y) {
     ctx.save();
-    ctx.font = '10px sans-serif';
+    ctx.font = '11px sans-serif';
     ctx.textBaseline = 'middle';
     let cx = startX;
     items.forEach(item => {
@@ -1354,182 +1778,151 @@
   }
 
   /* ============================================================
-     CHART 1 — Healthcare Spend vs General Fund (Line Chart)
-     Lines: GF (blue solid), HC Scenario A/B/C (colored;
-     active = solid, inactive = dashed)
+     CHART 1 — Healthcare Share of the General Fund (Line Chart)
+     Plotting dollars put a ~$2M line under a ~$25M line, so the
+     healthcare line looked flat. Share of GF shows the squeeze.
   ============================================================ */
   function drawChart1(canvas, inputs, scA, scB, scC) {
     const { w, h } = syncCanvas(canvas);
     const ctx = clearCanvas(canvas);
-    const pad = { l: 72, r: 14, t: 28, b: 32 };
+    const pad = { l: 52, r: 26, t: 28, b: 32 };
     const N   = inputs.years;
 
-    let yMax = 0;
-    for (let t = 0; t <= N; t++) {
-      yMax = Math.max(yMax, scA.GF[t], scA.HC[t], scB.HC[t], scC.HC[t]);
-    }
-    yMax = niceMax(yMax * 1.08);
-    const yMin   = 0;
-    const yTicks = makeTicks(yMin, yMax, 5);
-    const xLabels = Array.from({ length: N + 1 }, (_, i) => `Yr${i}`);
+    let lo = Infinity, hi = -Infinity;
+    [scA, scB, scC].forEach(sc => sc.hcPct.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); }));
+    const span = (hi - lo) || 1;
+    const sc1 = niceScale(Math.max(0, lo - span * 0.2), hi + span * 0.15, 5);
+    const yMin = sc1.min, yMax = sc1.max, yTicks = sc1.ticks;
+    const xLabels = Array.from({ length: N + 1 }, (_, i) => fyLabel(inputs, i).replace('FY', ''));
 
-    const { px, py, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
-      v => fmtCompact(v));
-
+    const { px, py, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax, v => v.toFixed(1) + '%');
     const pts = arr => toPoints(arr, yMin, yMax, px, bx, py, by);
 
-    /* GF line */
-    drawPolyline(ctx, pts(scA.GF), C.GF, false, 2.5);
-
-    /* HC scenario lines */
-    const scenLines = [
-      { arr: scA.HC, color: C.A, key: 'A' },
-      { arr: scB.HC, color: C.B, key: 'B' },
-      { arr: scC.HC, color: C.C, key: 'C' }
-    ];
-    scenLines.forEach(s => {
-      const isDashed = s.key !== activeScenario;
-      drawPolyline(ctx, pts(s.arr), s.color, isDashed, isDashed ? 1.5 : 2.5);
-    });
-
-    /* Dots on active HC scenario */
-    const activeHC    = activeScenario === 'A' ? scA.HC : activeScenario === 'B' ? scB.HC : scC.HC;
-    const activeColor = activeScenario === 'A' ? C.A    : activeScenario === 'B' ? C.B    : C.C;
-    pts(activeHC).forEach(p => drawDot(ctx, p.x, p.y, 3.5, activeColor));
-    pts(scA.GF).forEach(p  => drawDot(ctx, p.x, p.y, 2.5, C.GF));
+    [{ sc: scA, color: C.A, k: 'A' }, { sc: scB, color: C.B, k: 'B' }, { sc: scC, color: C.C, k: 'C' }]
+      .forEach(({ sc, color, k }) => {
+        const on = k === activeScenario;
+        drawPolyline(ctx, pts(sc.hcPct), color, !on, on ? 2.5 : 1.5);
+        if (on) {
+          pts(sc.hcPct).forEach(p => drawDot(ctx, p.x, p.y, 3.5, color));
+          const last = pts(sc.hcPct)[N];
+          ctx.fillStyle = C.white;
+          ctx.font = 'bold 11px monospace';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(sc.hcPct[N].toFixed(1) + '%', last.x - 4, last.y - 5);
+        }
+      });
 
     drawLegend(ctx,
-      [{ label: 'GF Budget', color: C.GF,  dashed: false },
-       { label: 'HC Scen A',  color: C.A,   dashed: activeScenario !== 'A' },
-       { label: 'HC Scen B',  color: C.B,   dashed: activeScenario !== 'B' },
-       { label: 'HC Scen C',  color: C.C,   dashed: activeScenario !== 'C' }],
+      [{ label: 'Scenario A', color: C.A, dashed: activeScenario !== 'A' },
+       { label: 'Scenario B', color: C.B, dashed: activeScenario !== 'B' },
+       { label: 'Scenario C', color: C.C, dashed: activeScenario !== 'C' }],
       px, py - 14);
   }
 
   /* ============================================================
-     CHART 2 — Tax Rate & Household Impact by Scenario (Bar)
+     CHART 2 — Median Home Impact vs Today (Bar)
      Groups: Year 1 | Year N  ×  Scenarios A, B, C
+     Year N is the cumulative bill increase vs today, not just
+     that year's increment (the old chart showed only the increment).
   ============================================================ */
   function drawChart2(canvas, inputs, scA, scB, scC) {
     const { w, h } = syncCanvas(canvas);
     const ctx = clearCanvas(canvas);
     const N   = inputs.years;
-    const pad = { l: 60, r: 14, t: 28, b: 44 };
+    const pad = { l: 60, r: 26, t: 28, b: 32 };
+    const f1 = fyLabel(inputs, 1).replace('FY', ''), fN = fyLabel(inputs, N).replace('FY', '');
 
-    /* 6 bars: A-yr1, B-yr1, C-yr1, A-yrN, B-yrN, C-yrN */
     const bars = [
-      { lbl: 'A Yr1',     val: scA.householdImpact[1], color: C.A, alpha: 1.0 },
-      { lbl: 'B Yr1',     val: scB.householdImpact[1], color: C.B, alpha: 1.0 },
-      { lbl: 'C Yr1',     val: scC.householdImpact[1], color: C.C, alpha: 1.0 },
-      { lbl: `A Yr${N}`,  val: scA.householdImpact[N], color: C.A, alpha: 0.45 },
-      { lbl: `B Yr${N}`,  val: scB.householdImpact[N], color: C.B, alpha: 0.45 },
-      { lbl: `C Yr${N}`,  val: scC.householdImpact[N], color: C.C, alpha: 0.45 }
+      { lbl: `A ${f1}`, val: scA.householdImpact[1], color: C.A, alpha: 1.0 },
+      { lbl: `B ${f1}`, val: scB.householdImpact[1], color: C.B, alpha: 1.0 },
+      { lbl: `C ${f1}`, val: scC.householdImpact[1], color: C.C, alpha: 1.0 },
+      { lbl: `A ${fN}`, val: scA.householdImpact[N], color: C.A, alpha: 0.55 },
+      { lbl: `B ${fN}`, val: scB.householdImpact[N], color: C.B, alpha: 0.55 },
+      { lbl: `C ${fN}`, val: scC.householdImpact[N], color: C.C, alpha: 0.55 }
     ];
 
-    const yMax   = niceMax(Math.max(...bars.map(b => b.val), 1) * 1.18);
-    const yMin   = 0;
-    const yTicks = makeTicks(yMin, yMax, 5);
+    const vals = bars.map(b => b.val);
+    const sc2 = niceScale(Math.min(0, ...vals) * 1.25, Math.max(1, ...vals) * 1.18, 5);
+    const yMin = sc2.min, yMax = sc2.max, yTicks = sc2.ticks;
     const xLabels = bars.map(b => b.lbl);
 
     const { px, py, pw, ph, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
-      v => '$' + Math.round(v));
+      v => (v < 0 ? '−$' : '$') + Math.abs(Math.round(v)));
 
     const slotW = pw / bars.length;
     const barW  = slotW * 0.62;
+    const zeroY = mY(0, yMin, yMax, py, by);
 
-    /* Group divider between Yr1 and YrN */
     const midX = px + pw / 2;
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(midX, py); ctx.lineTo(midX, by); ctx.stroke();
     ctx.setLineDash([]);
 
-    /* Group labels */
     ctx.fillStyle = C.text;
-    ctx.font = 'bold 9px sans-serif';
+    ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.fillText('Year 1 Household Impact ($/yr)', px + pw * 0.25, py - 2);
-    ctx.fillText(`Year ${N} Household Impact ($/yr)`, px + pw * 0.75, py - 2);
+    ctx.fillText(`${fyLabel(inputs, 1)} ($/yr vs today)`, px + pw * 0.25, py - 2);
+    ctx.fillText(`${fyLabel(inputs, N)} ($/yr vs today)`, px + pw * 0.75, py - 2);
 
     bars.forEach((bar, i) => {
       const bx0 = px + i * slotW + (slotW - barW) / 2;
-      const barH = Math.max(0, (bar.val / yMax) * ph);
-      const bTop = by - barH;
+      const yV = mY(bar.val, yMin, yMax, py, by);
+      const top = Math.min(yV, zeroY), hgt = Math.max(1, Math.abs(zeroY - yV));
 
       ctx.globalAlpha = bar.alpha;
       ctx.fillStyle   = bar.color;
-      ctx.fillRect(bx0, bTop, barW, barH);
-
-      /* Bar border */
+      ctx.fillRect(bx0, top, barW, hgt);
+      ctx.globalAlpha = 1.0;
       ctx.strokeStyle = bar.color;
       ctx.lineWidth   = 1;
-      ctx.globalAlpha = bar.alpha * 1.2 > 1 ? 1 : bar.alpha * 1.2;
-      ctx.strokeRect(bx0, bTop, barW, barH);
-      ctx.globalAlpha = 1.0;
+      ctx.strokeRect(bx0, top, barW, hgt);
 
-      /* Value label */
-      if (bar.val > 0) {
-        ctx.fillStyle = bar.color;
-        ctx.globalAlpha = bar.alpha >= 1.0 ? 1.0 : 0.85;
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText('$' + Math.round(bar.val), bx0 + barW / 2, bTop - 2);
-        ctx.globalAlpha = 1.0;
-      }
+      ctx.fillStyle = C.white;
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText((bar.val < 0 ? '−$' : '$') + Math.abs(Math.round(bar.val)), bx0 + barW / 2, bar.val >= 0 ? top - 2 : zeroY - 2);
     });
-
-    /* Y axis label */
-    ctx.save();
-    ctx.translate(11, py + ph / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle   = C.text;
-    ctx.font        = '9px sans-serif';
-    ctx.textAlign   = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Annual Household $ Impact', 0, 0);
-    ctx.restore();
   }
 
   /* ============================================================
-     CHART 3 — Reserve Fund Trajectory (Line Chart)
-     3 scenario lines + policy floor (dashed red)
-     Alert circles where balance < floor
+     CHART 3 — GF Reserve Trajectory, rate held flat (Line Chart)
   ============================================================ */
   function drawChart3(canvas, inputs, scA, scB, scC) {
     const { w, h } = syncCanvas(canvas);
     const ctx = clearCanvas(canvas);
     const N   = inputs.years;
-    const pad = { l: 72, r: 14, t: 28, b: 32 };
+    const pad = { l: 72, r: 26, t: 28, b: 32 };
 
     let yMin = Infinity, yMax = -Infinity;
     for (let t = 0; t <= N; t++) {
-      yMin = Math.min(yMin, scA.reserveBalance[t], scB.reserveBalance[t], scC.reserveBalance[t]);
-      yMax = Math.max(yMax, scA.reserveBalance[t], scB.reserveBalance[t],
-                           scC.reserveBalance[t],  scA.reserveFloor[t]);
+      yMin = Math.min(yMin, scA.reserveBalance[t], scB.reserveBalance[t], scC.reserveBalance[t], scA.reserveFloor[t]);
+      yMax = Math.max(yMax, scA.reserveBalance[t], scB.reserveBalance[t], scC.reserveBalance[t], scA.reserveFloor[t]);
     }
     const range = yMax - yMin || 1;
-    yMin = yMin - range * 0.08;
-    yMax = yMax + range * 0.08;
+    const sc3 = niceScale(yMin - range * 0.05, yMax + range * 0.05, 5);
+    yMin = sc3.min; yMax = sc3.max;
+    const yTicks  = sc3.ticks;
+    const xLabels = Array.from({ length: N + 1 }, (_, i) => fyLabel(inputs, i).replace('FY', ''));
 
-    const yTicks  = makeTicks(yMin, yMax, 5);
-    const xLabels = Array.from({ length: N + 1 }, (_, i) => `Yr${i}`);
-
-    const { px, py, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
-      v => fmtCompact(v));
-
+    const { px, py, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax, v => fmtCompact(v));
     const pts = arr => toPoints(arr, yMin, yMax, px, bx, py, by);
 
-    /* Policy floor */
+    if (yMin < 0) {
+      const zy = mY(0, yMin, yMax, py, by);
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(px, zy); ctx.lineTo(bx, zy); ctx.stroke();
+    }
+
     drawPolyline(ctx, pts(scA.reserveFloor), C.floor, true, 2);
 
-    /* Reserve lines */
-    [{ sc: scA, color: C.A }, { sc: scB, color: C.B }, { sc: scC, color: C.C }]
-      .forEach(({ sc, color }) => {
-        drawPolyline(ctx, pts(sc.reserveBalance), color, false, 2);
-        /* Alert circles where balance < floor */
+    [{ sc: scA, color: C.A, k: 'A' }, { sc: scB, color: C.B, k: 'B' }, { sc: scC, color: C.C, k: 'C' }]
+      .forEach(({ sc, color, k }) => {
+        drawPolyline(ctx, pts(sc.reserveBalance), color, k !== activeScenario, k === activeScenario ? 2.5 : 1.5);
         sc.reserveAlert.forEach((alert, t) => {
           if (alert) {
             const x = mX(t, N + 1, px, bx);
@@ -1543,128 +1936,105 @@
         });
       });
 
-    /* Dots on active scenario */
     const activeSc    = activeScenario === 'A' ? scA : activeScenario === 'B' ? scB : scC;
     const activeColor = activeScenario === 'A' ? C.A  : activeScenario === 'B' ? C.B  : C.C;
     pts(activeSc.reserveBalance).forEach(p => drawDot(ctx, p.x, p.y, 3.5, activeColor));
 
     drawLegend(ctx,
-      [{ label: 'Reserve A',    color: C.A,     dashed: false },
-       { label: 'Reserve B',    color: C.B,     dashed: false },
-       { label: 'Reserve C',    color: C.C,     dashed: false },
+      [{ label: 'Reserve A',    color: C.A,     dashed: activeScenario !== 'A' },
+       { label: 'Reserve B',    color: C.B,     dashed: activeScenario !== 'B' },
+       { label: 'Reserve C',    color: C.C,     dashed: activeScenario !== 'C' },
        { label: 'Policy Floor', color: C.floor, dashed: true  }],
       px, py - 14);
   }
 
   /* ============================================================
-     CHART 4 — Year-1 Budget Pressure Bridge (Waterfall)
-     Bars: GF Base → +GF Growth → -HC Increase → Net Position
+     CHART 4 — Year-1 General Fund Bridge (Waterfall)
+     New revenue at a flat rate, minus normal growth in
+     non-healthcare costs, minus the GF's healthcare increase,
+     equals what's left (or the hole). This replaces the old
+     "GF base + growth − HC" chart, which showed a $25M "net
+     position" that said nothing about whether the budget balances.
   ============================================================ */
   function drawChart4(canvas, inputs, scA, scB, scC) {
     const { w, h } = syncCanvas(canvas);
     const ctx = clearCanvas(canvas);
     const pad = { l: 72, r: 18, t: 28, b: 50 };
 
-    const GF0    = inputs.gfBudget;
-    const GF1    = scA.GF[1]; /* GF growth same for all scenarios */
-    const gfGrow = GF1 - GF0;
     const activeSc = activeScenario === 'A' ? scA : activeScenario === 'B' ? scB : scC;
-    const hcInc  = activeSc.hcIncrease[1];
-    const netPos = GF1 - hcInc;
+    const g        = inputs.gfGrowth / 100;
+    const revGrow  = inputs.gfBudget * g;
+    const nonHC    = (inputs.gfBudget - activeSc.hcGF[0]) * g;
+    const hcGrow   = activeSc.hcGF[1] - activeSc.hcGF[0];
+    const net      = revGrow - nonHC - hcGrow;
 
-    /*  Waterfall bars:
-        1. GF Base (0 → GF0)     — blue
-        2. GF Growth (+)         — green floating on GF0
-        3. HC Increase (−)       — red dropping from GF1
-        4. Net Position (0 → net)— result bar
-    */
-    const waterfallBars = [
-      { label: 'GF Base\nYear 0', start: 0,    end: GF0,  color: C.GF,                     type: 'base' },
-      { label: 'GF\nGrowth +',   start: GF0,   end: GF1,  color: '#3fb950',                type: 'pos'  },
-      { label: `HC\nIncrease −`, start: GF1,   end: netPos, color: '#f85149',              type: 'neg'  },
-      { label: 'Net\nPosition',  start: 0,     end: netPos, color: netPos >= GF0 ? '#3fb950' : '#d29922', type: 'result' }
+    const bars = [
+      { label: 'New Revenue\n(flat rate)',   start: 0,                   end: revGrow,               color: '#3fb950' },
+      { label: 'Non-HC Cost\nGrowth',         start: revGrow,             end: revGrow - nonHC,       color: '#58a6ff' },
+      { label: 'GF Healthcare\nChange',       start: revGrow - nonHC,     end: net,                   color: hcGrow >= 0 ? '#f85149' : '#3fb950' },
+      { label: net >= 0 ? 'Left Over' : 'Budget Hole', start: 0,         end: net,                   color: net >= 0 ? '#3fb950' : '#f85149', result: true }
     ];
 
-    const allVals = waterfallBars.flatMap(b => [b.start, b.end]);
+    const allVals = bars.flatMap(b => [b.start, b.end]);
     let yMin = Math.min(0, ...allVals);
-    let yMax = Math.max(...allVals) * 1.1;
-    if (yMax === 0) yMax = 1;
+    let yMax = Math.max(0, ...allVals);
+    const span = (yMax - yMin) || 1;
+    const sc4 = niceScale(yMin - span * 0.08, yMax + span * 0.12, 5);
+    yMin = sc4.min; yMax = sc4.max;
+    const yTicks = sc4.ticks;
+    const { px, py, pw, ph, bx, by } = drawFrame(ctx, w, h, pad, bars.map(() => ''), yTicks, yMin, yMax, v => fmtCompact(v));
 
-    const yTicks  = makeTicks(yMin, yMax, 5);
-    const xLabels = waterfallBars.map(b => '');  /* custom x labels below */
+    const zeroY = mY(0, yMin, yMax, py, by);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px, zeroY); ctx.lineTo(bx, zeroY); ctx.stroke();
 
-    const { px, py, pw, ph, bx, by } = drawFrame(ctx, w, h, pad, xLabels, yTicks, yMin, yMax,
-      v => fmtCompact(v));
+    const slotW = pw / bars.length;
+    const barW  = slotW * 0.58;
 
-    /* Zero reference line */
-    if (yMin < 0) {
-      const zeroY = mY(0, yMin, yMax, py, by);
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(px, zeroY); ctx.lineTo(bx, zeroY); ctx.stroke();
-    }
+    bars.forEach((bar, i) => {
+      const bx0  = px + i * slotW + (slotW - barW) / 2;
+      const yTop = mY(Math.max(bar.start, bar.end), yMin, yMax, py, by);
+      const yBot = mY(Math.min(bar.start, bar.end), yMin, yMax, py, by);
+      const barH = Math.max(1, yBot - yTop);
 
-    const nBars   = waterfallBars.length;
-    const slotW   = pw / nBars;
-    const barW    = slotW * 0.58;
-
-    waterfallBars.forEach((bar, i) => {
-      const bx0   = px + i * slotW + (slotW - barW) / 2;
-      const yTop  = mY(Math.max(bar.start, bar.end), yMin, yMax, py, by);
-      const yBot  = mY(Math.min(bar.start, bar.end), yMin, yMax, py, by);
-      const barH  = Math.max(1, yBot - yTop);
-
-      /* Bar fill */
       ctx.globalAlpha = 0.85;
       ctx.fillStyle   = bar.color;
       ctx.fillRect(bx0, yTop, barW, barH);
-
-      /* Bar border */
       ctx.globalAlpha = 1.0;
       ctx.strokeStyle = bar.color;
       ctx.lineWidth   = 1.5;
       ctx.strokeRect(bx0, yTop, barW, barH);
 
-      /* Value label */
-      const valLabel = fmtCompact(bar.end);
+      const delta = bar.result ? bar.end : bar.end - bar.start;
       ctx.fillStyle  = C.white;
       ctx.font       = 'bold 10px monospace';
       ctx.textAlign  = 'center';
-      ctx.textBaseline = bar.end >= bar.start ? 'bottom' : 'top';
-      const lblY     = bar.end >= bar.start ? yTop - 3 : yBot + 3;
-      ctx.fillText(valLabel, bx0 + barW / 2, lblY);
+      ctx.textBaseline = 'bottom';
+      ctx.fillText((delta >= 0 ? '+' : '') + fmtCompact(delta), bx0 + barW / 2, yTop - 3);
 
-      /* Custom X label (multi-line) */
       const lines = bar.label.split('\n');
       ctx.fillStyle   = C.text;
-      ctx.font        = '9px sans-serif';
-      ctx.textAlign   = 'center';
+      ctx.font        = '10px sans-serif';
       ctx.textBaseline = 'top';
-      lines.forEach((line, j) => {
-        ctx.fillText(line, bx0 + barW / 2, by + 6 + j * 11);
-      });
+      lines.forEach((line, j) => ctx.fillText(line, bx0 + barW / 2, by + 6 + j * 12));
 
-      /* Connector dashes to next bar (waterfall connector) */
-      if (i < nBars - 1 && bar.type !== 'result') {
-        const nextBx0  = px + (i + 1) * slotW + (slotW - barW) / 2;
-        const connY    = mY(bar.end, yMin, yMax, py, by);
-        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      if (i < bars.length - 2) {
+        const nextBx0 = px + (i + 1) * slotW + (slotW - barW) / 2;
+        const connY   = mY(bar.end, yMin, yMax, py, by);
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
         ctx.lineWidth   = 1;
         ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.moveTo(bx0 + barW, connY);
-        ctx.lineTo(nextBx0, connY);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx0 + barW, connY); ctx.lineTo(nextBx0, connY); ctx.stroke();
         ctx.setLineDash([]);
       }
     });
 
-    /* Annotation: active scenario label */
     ctx.fillStyle = C.text;
-    ctx.font      = '9px sans-serif';
+    ctx.font      = '10px sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
-    ctx.fillText(`Scenario ${activeScenario} — Year 1`, bx, py + 2);
+    ctx.fillText(`Scenario ${activeScenario} — ${fyLabel(inputs, 1)}`, bx - 4, py + 4);
   }
 
   /* ============================================================
@@ -1673,37 +2043,29 @@
   function render() {
     const inputs = getInputs();
 
-    /* Compute projections for all 3 scenarios */
-    const scA = calcScenario(inputs, inputs.trendA);
-    const scB = calcScenario(inputs, inputs.trendB);
-    const scC = calcScenario(inputs, inputs.trendC);
+    const scA = calcScenario(inputs, inputs.trendA, inputs.saveA);
+    const scB = calcScenario(inputs, inputs.trendB, inputs.saveB);
+    const scC = calcScenario(inputs, inputs.trendC, inputs.saveC);
 
     const activeSc    = activeScenario === 'A' ? scA : activeScenario === 'B' ? scB : scC;
-    const activeTrend = activeScenario === 'A' ? inputs.trendA
-                      : activeScenario === 'B' ? inputs.trendB : inputs.trendC;
-    const scenNames   = { A: 'Status Quo', B: 'Improved', C: 'Target' };
+    const activeTrend = inputs['trend' + activeScenario];
+    const activeSave  = inputs['save' + activeScenario];
+    const hf = calcHealthFund(inputs, activeTrend, activeSave);
+
+    $id('activeScenarioLabel').textContent = `${activeScenario} (${SCEN_NAMES[activeScenario]})`;
+
+    updateScenarioStrip(inputs);
+    const extra = renderKPIs(inputs, activeSc, scA);
+    renderHealthFund(inputs, hf, activeTrend);
+    renderTable(inputs, activeSc);
+    renderSummary(inputs, activeSc, activeTrend, activeSave, extra, hf);
+
     lastReportState = {
-      inputs,
-      activeSc,
+      inputs, activeSc, extra, hf, activeTrend, activeSave,
       scenarioKey: activeScenario,
-      scenarioName: scenNames[activeScenario],
-      activeTrend
+      scenarioName: SCEN_NAMES[activeScenario]
     };
 
-    /* Active scenario label in title */
-    $id('activeScenarioLabel').textContent =
-      `${activeScenario} (${scenNames[activeScenario]})`;
-
-    /* Update scenario strip */
-    updateScenarioStrip(inputs);
-
-    /* KPIs */
-    renderKPIs(inputs, activeSc);
-
-    /* Narrative summary */
-    renderSummary(inputs, activeSc, scenNames[activeScenario], activeTrend);
-
-    /* Charts */
     drawChart1($id('chart1'), inputs, scA, scB, scC);
     drawChart2($id('chart2'), inputs, scA, scB, scC);
     drawChart3($id('chart3'), inputs, scA, scB, scC);
@@ -1713,89 +2075,140 @@
   /* ============================================================
      ACTIVE SCENARIO BUTTONS
   ============================================================ */
-  function setActiveScenario(s) {
+  function setActiveScenario(s, skipRender) {
     activeScenario = s;
-    $id('btnA').className =
-      'scenario-btn' + (s === 'A' ? ' active-a' : '');
-    $id('btnB').className =
-      'scenario-btn' + (s === 'B' ? ' active-b' : '');
-    $id('btnC').className =
-      'scenario-btn' + (s === 'C' ? ' active-c' : '');
-    render();
+    $id('btnA').className = 'scenario-btn' + (s === 'A' ? ' active-a' : '');
+    $id('btnB').className = 'scenario-btn' + (s === 'B' ? ' active-b' : '');
+    $id('btnC').className = 'scenario-btn' + (s === 'C' ? ' active-c' : '');
+    if (!skipRender) render();
   }
 
   /* ============================================================
      INPUT MODE TOGGLE (Total Spend vs Per-Employee)
   ============================================================ */
-  function handleInputModeChange() {
+  function syncInputModeFields() {
     const mode = dashboardRoot.querySelector('input[name="inputMode"]:checked')?.value;
-    $id('totalSpendField').style.display =
-      mode === 'total' ? '' : 'none';
-    $id('perEmpField').style.display =
-      mode === 'perEmployee' ? '' : 'none';
-    render();
+    $id('totalSpendField').style.display = mode === 'perEmployee' ? 'none' : '';
+    $id('perEmpField').style.display     = mode === 'perEmployee' ? '' : 'none';
+  }
+  function handleInputModeChange() {
+    syncInputModeFields();
+    handleRecalc();
   }
 
   /* ============================================================
-     PRESET LOADER
+     APPLY A SET OF VALUES (presets, reset, shared links)
   ============================================================ */
+  function applyValues(p) {
+    FIELD_IDS.forEach(id => {
+      const el = $id(id);
+      if (el && p[id] !== undefined) el.value = p[id];
+    });
+    if (p.inputMode) {
+      const modeEl = $id(p.inputMode === 'perEmployee' ? 'modePerEmp' : 'modeTotal');
+      if (modeEl) modeEl.checked = true;
+    }
+    if (p.years) {
+      dashboardRoot.querySelectorAll('input[name="years"]').forEach(r => {
+        r.checked = (parseInt(r.value, 10) === parseInt(p.years, 10));
+      });
+    }
+    syncInputModeFields();
+  }
+
   function applyPreset(key) {
     const p = PRESETS[key];
     if (!p) return;
-
-    const set = (id, val) => {
-      const el = $id(id);
-      if (el) el.value = val;
-    };
-
-    set('gfBudget',       p.gfBudget);
-    set('gfGrowth',       p.gfGrowth);
-    set('reserveBalance', p.reserveBalance);
-    set('reservePct',     p.reservePct);
-    set('taxableValue',   p.taxableValue);
-    set('tvGrowth',       p.tvGrowth);
-    set('taxRate',        p.taxRate);
-    set('medianHome',     p.medianHome);
-    set('moFunded',       p.moFunded);
-    set('empCount',       p.empCount);
-    set('hcTotal',        p.hcTotal);
-    set('hcPerEmployee',  p.hcPerEmployee);
-    set('trendA',         p.trendA);
-    set('trendB',         p.trendB);
-    set('trendC',         p.trendC);
-    set('fteCost',        p.fteCost);
-    set('fteLabel',       p.fteLabel);
-
-    /* Input mode radio */
-    const modeEl = $id(p.inputMode === 'total' ? 'modeTotal' : 'modePerEmp');
-    if (modeEl) modeEl.checked = true;
-    handleInputModeChange();
-
-    /* Years radio */
-    dashboardRoot.querySelectorAll('input[name="years"]').forEach(r => {
-      r.checked = (parseInt(r.value) === p.years);
-    });
-
+    applyValues(p);
     render();
   }
 
-  /* ============================================================
-     RESET
-  ============================================================ */
   function resetToDefaults() {
     $id('presetSelect').value = 'midsize';
-    setActiveScenario('A');
+    setActiveScenario('A', true);
     applyPreset('midsize');
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   }
 
-  /* ============================================================
-     RECALCULATE (input change handler)
-  ============================================================ */
   function handleRecalc() {
-    /* Switch preset dropdown to "Custom" when user edits any input */
     const sel = $id('presetSelect');
     if (sel.value !== 'custom') sel.value = 'custom';
     render();
+  }
+
+  /* ============================================================
+     SHARE LINK, COPY SUMMARY
+     Inputs ride in the URL after "#s=", so a link reopens the
+     dashboard with the same numbers. Nothing is sent to a server.
+  ============================================================ */
+  function currentValues() {
+    const v = {};
+    FIELD_IDS.forEach(id => { const el = $id(id); if (el) v[id] = el.value; });
+    v.inputMode = dashboardRoot.querySelector('input[name="inputMode"]:checked')?.value || 'total';
+    v.years = dashboardRoot.querySelector('input[name="years"]:checked')?.value || '5';
+    v.scenario = activeScenario;
+    return v;
+  }
+
+  function encodeState(v) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(v))))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function decodeState(s) {
+    try {
+      const b = s.replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(decodeURIComponent(escape(atob(b))));
+    } catch (e) { return null; }
+  }
+
+  function readHashState(hash) {
+    const m = /[#&]s=([A-Za-z0-9_-]+)/.exec(hash || '');
+    return m ? decodeState(m[1]) : null;
+  }
+
+  /* When embedded in WordPress (same-origin iframe), share the page URL
+     people actually visit, not the plugin's raw file. */
+  function shareBaseUrl() {
+    try {
+      if (window.top !== window.self && window.top.location.href) {
+        return window.top.location.href.split('#')[0];
+      }
+    } catch (e) { /* cross-origin parent: fall back to this frame */ }
+    return location.href.split('#')[0];
+  }
+
+  function toast(msg) {
+    const t = $id('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function copyText(text, okMsg) {
+    const done = () => toast(okMsg);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+  function fallbackCopy(text, done) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { prompt('Copy this:', text); }
+    ta.remove();
+  }
+
+  function shareLink() {
+    const url = shareBaseUrl() + '#s=' + encodeState(currentValues());
+    copyText(url, 'Link copied. Anyone who opens it sees these exact numbers.');
+  }
+
+  function copySummary() {
+    copyText(($id('summaryText')?.innerText || '').trim(), 'Summary copied.');
   }
 
   function bindEventListeners() {
@@ -1804,16 +2217,17 @@
     $id('btnC').addEventListener('click', () => setActiveScenario('C'));
     $id('btnReset').addEventListener('click', resetToDefaults);
     $id('btnDownloadReport').addEventListener('click', downloadReport);
+    $id('btnCsv').addEventListener('click', downloadCsv);
+    $id('btnShare').addEventListener('click', shareLink);
+    $id('btnCopySummary').addEventListener('click', copySummary);
 
     dashboardRoot.querySelectorAll('input[name="inputMode"]').forEach(el => {
       el.addEventListener('change', handleInputModeChange);
     });
-
     dashboardRoot.querySelectorAll('input[name="years"]').forEach(el => {
       el.addEventListener('change', handleRecalc);
     });
-
-    dashboardRoot.querySelectorAll('input[type="number"], input[type="text"]').forEach(el => {
+    dashboardRoot.querySelectorAll('input[type="number"], input[type="text"], .input-field select').forEach(el => {
       el.addEventListener('input', handleRecalc);
       el.addEventListener('change', handleRecalc);
     });
@@ -1823,9 +2237,6 @@
     });
   }
 
-  /* ============================================================
-     EVENT LISTENERS
-  ============================================================ */
   /* Redraw charts on window resize */
   let _resizeTimer;
   window.addEventListener('resize', () => {
@@ -1834,7 +2245,7 @@
   });
 
   /* ============================================================
-     BOOT — initial render with defaults
+     BOOT
   ============================================================ */
   function bootDashboard() {
     if (dashboardRoot.dataset.booted === '1') return;
@@ -1842,11 +2253,16 @@
 
     bindEventListeners();
 
-    /* Use requestAnimationFrame so layout has completed and canvas
-       elements have CSS-computed dimensions before drawing. */
     requestAnimationFrame(() => {
-      setActiveScenario('A');
-      applyPreset('midsize');
+      applyValues(PRESETS.midsize);
+      let parentHash = '';
+      try { parentHash = window.top !== window.self ? window.top.location.hash : ''; } catch (e) {}
+      const shared = readHashState(location.hash) || readHashState(parentHash);
+      if (shared) {
+        applyValues(shared);
+        $id('presetSelect').value = 'custom';
+      }
+      setActiveScenario(shared && /^[ABC]$/.test(shared.scenario) ? shared.scenario : 'A');
     });
   }
 

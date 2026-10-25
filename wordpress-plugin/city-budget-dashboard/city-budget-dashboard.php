@@ -2,7 +2,7 @@
 /**
  * Plugin Name: City Budget Dashboard Embed
  * Description: Embeds the City Budget Healthcare Impact Dashboard with a shortcode.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: jbutler1079
  */
 
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 function cbd_render_dashboard_shortcode($atts = array()) {
     $atts = shortcode_atts(
         array(
-            'height' => '2200',
+            'height' => '1200',
             'class' => '',
             'max_width' => 'none',
             'full_bleed' => 'no'
@@ -24,7 +24,7 @@ function cbd_render_dashboard_shortcode($atts = array()) {
 
     $height = preg_replace('/[^0-9]/', '', (string) $atts['height']);
     if ($height === '') {
-        $height = '2200';
+        $height = '1200';
     }
 
     $extra_class = sanitize_html_class((string) $atts['class']);
@@ -56,6 +56,31 @@ function cbd_render_dashboard_shortcode($atts = array()) {
         referrerpolicy="no-referrer-when-downgrade"
       ></iframe>
     </div>
+    <script>
+    (function () {
+      /* Grow the iframe to fit the dashboard so nothing is cut off.
+         Works because the dashboard is served from this same site. */
+      var frames = document.querySelectorAll('.city-budget-dashboard-embed iframe');
+      var f = frames[frames.length - 1];
+      if (!f) return;
+      var minH = parseInt(f.style.height, 10) || 0;
+      function fit() {
+        try {
+          var d = f.contentDocument;
+          if (!d || !d.body) return;
+          var h = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight);
+          if (h > 0) f.style.height = Math.max(minH, h + 4) + 'px';
+        } catch (e) { /* different origin: keep the fixed height */ }
+      }
+      f.addEventListener('load', function () {
+        fit();
+        try {
+          if (window.ResizeObserver) new ResizeObserver(fit).observe(f.contentDocument.body);
+        } catch (e) {}
+        setInterval(fit, 1500);
+      });
+    })();
+    </script>
     <?php
 
     return (string) ob_get_clean();
